@@ -1,0 +1,6 @@
+/target/
+/apps/wordstrike/target/
+/vendor/designcraft-page/target/
+*.wstrike
+*.tmp
+*.log
