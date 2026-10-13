@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/branding/WordStrike.png" alt="Original WordStrike logo" width="160" height="160">
+</p>
+
 # WordStrike
 
 **by PWDS**
@@ -5,6 +9,8 @@
 **Give every page a purpose.**
 
 WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
+
+[Highlights](#highlights) · [Build and test](#build-and-test) · [Original artwork](assets/branding)
 
 ## Highlights
 
