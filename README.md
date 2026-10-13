@@ -1,8 +1,24 @@
 # WordStrike
 
-WordStrike is a Windows-first Rust document editor prototype. It edits an open `.wstrike` archive, supports structured text blocks, page setup, embedded PNG/JPEG images, undo/redo, and a bounded DOCX preview and import. The optional native editor exports PDF through the selected DesignCraft page crates.
+**by PWDS**
 
-This repository layout is a source package from the frozen 2026-10-11 Office checkpoint. The standalone layout passed 21 locked all-feature tests and built a Windows native executable. Independent review of the frozen outputs checked synthetic, searchable PDF text. No release or installer is supplied.
+**Give every page a purpose.**
+
+WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
+
+### Highlights
+
+- Compose structured text with embedded PNG or JPEG images.
+- Keep an editable `.wstrike` document.
+- Preview or import a bounded DOCX subset and export PDF.
+
+## Current status
+
+Source-only editor prototype. The standalone package passed 21 locked tests and built a Windows native executable, but no installer or release is supplied. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
+
+## Build a document
+
+Add structured text and images to a `.wstrike` project, revise page setup, and use undo or redo while editing. The native path can export PDF; a bounded DOCX import and preview helps bring in source material, with the editable project remaining the source of truth.
 
 ## Build and test
 
