@@ -6,7 +6,7 @@
 
 WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
 
-### Highlights
+## Highlights
 
 - Compose structured text with embedded PNG or JPEG images.
 - Keep an editable `.wstrike` document.
