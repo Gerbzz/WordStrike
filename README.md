@@ -16,9 +16,9 @@ WordStrike is a Windows-first workspace for building documents from text blocks 
 
 Source-only editor prototype. The standalone package passed 21 locked tests and built a Windows native executable, but no installer or release is supplied. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
 
-## Build a document
+## Files and export
 
-Add structured text and images to a `.wstrike` project, revise page setup, and use undo or redo while editing. The native path can export PDF; a bounded DOCX import and preview helps bring in source material, with the editable project remaining the source of truth.
+The editable `.wstrike` archive is the document source. DOCX import and preview cover a bounded subset; tracked changes and broken image references are refused, and inline styling can flatten. PDF export comes from the native editor. These paths do not establish broad Word round-trip fidelity.
 
 ## Build and test
 
