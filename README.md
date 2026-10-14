@@ -13,44 +13,54 @@
 
 <p align="center"><strong>Give every page a purpose.</strong></p>
 
-WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
+WordStrike is a Windows-first document editor. This repository contains a full native editing foundation for page layout, rich text, DOCX, PDF, proofing, and a ribbon-style desktop interface, alongside the original lightweight `.wstrike` editor and an explicit import path between them.
 
 ![WordStrike native editor showing a synthetic field-notes document with structured text, a blue chart, and a page break](assets/screenshots/wordstrike-editor.png)
 
-The native editor opened a self-authored field-notes project for this capture. The image shows the document structure, editable blocks, page setup, and toolbar; it does not establish an interactive or accessibility review. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
+This screenshot shows the **older lightweight editor**, not the newer native foundation. It opened a self-authored field-notes project for this capture. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
 
-<p align="center"><a href="#highlights">Highlights</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
+<p align="center"><a href="#foundation">Foundation</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
 
-## Highlights
+## Foundation
 
-- Compose structured text with embedded PNG or JPEG images.
-- Keep an editable `.wstrike` document.
-- Preview or import a bounded DOCX subset and export PDF.
+- `native/wordstrike` contains the complete source graph of the WordCraft document, layout, DOCX, PDF, proofing, command, and egui desktop crates, pinned to upstream commit [`04f6f53`](https://github.com/storytold/wordcraft/commit/04f6f53b8a4d8140c7bb62f949b0a6099a473da1).
+- The desktop target is named `wordstrike`, uses the original crane artwork and WordStrike identity, and exposes the donor's ribbon, page canvas, formatting, review, and document commands. Internal Rust crate names remain unchanged for dependency compatibility.
+- `file.importLegacy` converts the original `.wstrike` archive into a new unsaved native document. It maps titles, level 1–2 headings, styled paragraph runs, page setup, page breaks, and PNG/JPEG images with alt text. It refuses lists, invalid image references, unbound object markers, and unsupported heading levels rather than silently dropping them.
+- `apps/wordstrike` remains the original lightweight editor. It keeps its own archive format and can still be built independently.
 
 ## Current status
 
-Native editor source prototype. The standalone package passed 21 locked tests at the earlier checkpoint. The capture-only source change built a Windows native executable offline; no tests were rerun for that change and no installer or release is supplied. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
+**Source-stage migration.** The newer native source is present, but this pinned revision plus the legacy bridge has not been built or run. Cargo parses its manifests; full offline dependency resolution is blocked because the pinned `craft-libs` Git dependency is not cached on this machine. The copied bridge had passed 2/2 synthetic import tests against an older WordCraft pin, which is not a test result for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
 
 ## Files and export
 
-The editable `.wstrike` archive is the document source. DOCX import and preview cover a bounded subset; tracked changes and broken image references are refused, and inline styling can flatten. PDF export comes from the native editor. These paths do not establish broad Word round-trip fidelity.
+The lightweight editor uses `.wstrike` as its editable source. Its DOCX import covers a bounded subset; tracked changes and broken image references are refused, and inline styling can flatten. The newer native engine has its own document model and DOCX path. The explicit import command leaves the original `.wstrike` file untouched and requires **Save As** to create a native document. Layout may change during conversion.
 
 ## Build and test
 
-Install a Rust toolchain that supports edition 2024, then from the repository root run:
+Install Rust 1.90 or newer. The native workspace needs crates.io packages and the pinned `storytold/craft-libs` Git dependency. From the repository root:
+
+```powershell
+cargo run --manifest-path native/wordstrike/Cargo.toml -p wordcraft --bin wordstrike
+cargo test --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test legacy_import
+```
+
+These are build and regression commands for the source-stage native foundation, not passing results for this revision. Its `Cargo.lock` came from the pinned upstream snapshot and must be resolved for the added local legacy dependency before a locked build.
+
+To build and test the older lightweight editor independently:
 
 ```powershell
 cargo test --locked --manifest-path apps/wordstrike/Cargo.toml --all-features
 cargo build --locked --manifest-path apps/wordstrike/Cargo.toml --bin wordstrike-native --features native-ui
 ```
 
-The app has its own `Cargo.lock` and `[workspace]`. Its path dependencies resolve to `vendor/designcraft-page`, whose eight selected Rust crates, needed fonts, hyphenation data, ICC profile, upstream licenses, and notices are included. Synthetic DOCX and image fixtures live in `fixtures/wordstrike` at their tested relative paths. Cargo fetches the remaining dependencies from crates.io.
+The older editor has its own `Cargo.lock` and `[workspace]`. Its path dependencies resolve to `vendor/designcraft-page`, whose eight selected Rust crates, fonts, hyphenation data, ICC profile, licenses, and notices are included. Synthetic DOCX and image fixtures live in `fixtures/wordstrike`.
 
 ## Limits and source terms
 
-Pagination uses conservative block-height estimates. DOCX import is bounded and refuses tracked changes and broken image references; imported inline bold and italic styling can be flattened. The editable `.wstrike` format is the source of truth, rather than a claim of Word document round-trip fidelity. Native pointer, keyboard, screen reader, high contrast, scaling, font fallback, and other-platform acceptance are pending.
+The older editor's pagination uses conservative block-height estimates, and its DOCX import is bounded. The newer native foundation has a much broader editing source graph, but this migration branch has no current runtime acceptance evidence. Native pointer, keyboard, screen reader, high contrast, scaling, font fallback, document compatibility, and other-platform behavior remain to be checked. Neither editor is claimed to match Microsoft Word.
 
-The app's first-party license has not been selected; no first-party license grant is made here. The bundled upstream DesignCraft subset retains its original MIT/Apache license texts and third-party font/asset notices. See [SOURCE_SCOPE.md](SOURCE_SCOPE.md) for provenance and the tested boundary.
+The original first-party WordStrike code has no selected license; this repository makes no new grant for it. The native WordCraft-derived workspace retains upstream MIT/Apache license texts, copyright notices, and asset attribution under `native/wordstrike`; the older DesignCraft subset retains its licenses and notices under `vendor/designcraft-page`. See [SOURCE_SCOPE.md](SOURCE_SCOPE.md) and [native adaptation notes](native/wordstrike/ADAPTATION.md).
 
 ## PWDS brand artwork
 

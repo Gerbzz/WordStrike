@@ -1,6 +1,14 @@
 /target/
 /apps/wordstrike/target/
 /vendor/designcraft-page/target/
+/native/wordstrike/target/
+/node_modules/
+/dist/
+/build/
+/recordings/
+/.env
+/.env.*
+!.env.example
 *.wstrike
 *.tmp
 *.log
