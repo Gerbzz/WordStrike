@@ -30,7 +30,7 @@ This screenshot shows the **older lightweight editor**, not the newer native fou
 
 ## Current status
 
-**Source-stage migration.** The newer native source is present. [Windows CI](https://github.com/Gerbzz/WordStrike/actions/runs/38556741197) built the desktop editor and passed the targeted legacy import engine tests (5/5), safe-save tests (6/6), import UI tests (4/4), and Save Changes UI guard (1/1). The engine cases cover conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. Cargo also resolves the locked graph offline locally. No installer or binary release is supplied. The editor has not been launched and visually accepted for this revision; interactive editing, accessibility, and broad file fidelity need verification.
+**Source-stage migration.** The newer native source is present. [Windows CI for source revision `a4f22da`](https://github.com/Gerbzz/WordStrike/actions/runs/38561143477) built the desktop editor and passed the targeted legacy import engine tests (5/5), safe-save tests (6/6), import UI tests (4/4), and Save Changes UI guard (1/1). The engine cases cover conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. Cargo also resolves the locked graph offline locally. No installer or binary release is supplied. The editor has not been launched and visually accepted for this revision; interactive editing, accessibility, and broad file fidelity need verification.
 
 ## Files and export
 
