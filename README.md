@@ -4,7 +4,14 @@
 
 <h1 align="center">WordStrike</h1>
 
-<p align="center"><strong>by PWDS</strong><br><strong>Give every page a purpose.</strong></p>
+<p align="center">
+  <a href="https://prowebdevsolutions.com"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/branding/PWDS-logo-orange.svg">
+    <img src="assets/branding/PWDS-logo.png" alt="PWDS company logo" width="120">
+  </picture></a>
+</p>
+
+<p align="center"><strong>Give every page a purpose.</strong></p>
 
 WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
 
@@ -40,3 +47,7 @@ The app has its own `Cargo.lock` and `[workspace]`. Its path dependencies resolv
 Pagination uses conservative block-height estimates. DOCX import is bounded and refuses tracked changes and broken image references; imported inline bold and italic styling can be flattened. The editable `.wstrike` format is the source of truth, rather than a claim of Word document round-trip fidelity. Native pointer, keyboard, screen reader, high contrast, scaling, font fallback, and other-platform acceptance are pending.
 
 The app's first-party license has not been selected; no first-party license grant is made here. The bundled upstream DesignCraft subset retains its original MIT/Apache license texts and third-party font/asset notices. See [SOURCE_SCOPE.md](SOURCE_SCOPE.md) for provenance and the tested boundary.
+
+## PWDS brand artwork
+
+The company mark in this masthead is the existing [official PWDS logo](https://github.com/Gerbzz/PWDS-Website/blob/main/public/prowebdevsolutions-logo.png), with the [official orange display asset](https://prowebdevsolutions.com/images/prowebdevsolutions-logo-orange.svg) for dark backgrounds. The app logo above it remains the original Strike suite artwork.
