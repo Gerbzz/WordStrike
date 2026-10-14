@@ -17,7 +17,7 @@ WordStrike is a Windows-first workspace for building documents from text blocks 
 
 ![WordStrike native editor showing a synthetic field-notes document with structured text, a blue chart, and a page break](assets/screenshots/wordstrike-editor.png)
 
-The native editor opened a self-authored field-notes project for this capture. The image shows the document structure, editable blocks, page setup, and toolbar; it does not establish an interactive or accessibility review. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
+The older lightweight native editor opened a self-authored field-notes project for this capture. The image shows the document structure, editable blocks, page setup, and toolbar; it does not establish an interactive or accessibility review. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
 
 <p align="center"><a href="#highlights">Highlights</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
 
@@ -29,7 +29,7 @@ The native editor opened a self-authored field-notes project for this capture. T
 
 ## Current status
 
-Native editor source prototype. The standalone package passed 21 locked tests at the earlier checkpoint. The capture-only source change built a Windows native executable offline; no tests were rerun for that change and no installer or release is supplied. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
+The main branch is a lightweight native editor source prototype. The standalone package passed 21 locked tests at the earlier checkpoint. The capture-only source change built a Windows native executable offline; no tests were rerun for that change and no installer or release is supplied. A [newer native foundation remains in draft PR #1](https://github.com/Gerbzz/WordStrike/pull/1); its [Windows source checks passed on revision `a4f22da`](https://github.com/Gerbzz/WordStrike/actions/runs/38561143477), but it has no matching runtime screenshot or visual acceptance yet. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
 
 ## Files and export
 
