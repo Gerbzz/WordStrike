@@ -1,0 +1,48 @@
+name: Native Windows checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/native-windows.yml
+      - native/wordstrike/**
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    if: github.repository == 'Gerbzz/WordStrike'
+    runs-on: windows-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: native/wordstrike
+        shell: pwsh
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_INCREMENTAL: '0'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Show Rust toolchain
+        run: |
+          rustc --version
+          cargo --version
+
+      - name: Build WordStrike desktop editor
+        run: cargo build --locked -p wordcraft --bin wordstrike
+
+      - name: Test legacy import and safe save
+        run: cargo test --locked -p wordcraft-engine --test legacy_import --test safe_save
+
+      - name: Test legacy import UI flow
+        run: cargo test --locked -p wordcraft-ui-egui --lib legacy_import
+
+      - name: Test Save Changes UI guard
+        run: cargo test --locked -p wordcraft-ui-egui --lib save_changes_waits_for_the_save_as_answer
