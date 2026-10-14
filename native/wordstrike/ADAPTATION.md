@@ -47,8 +47,9 @@ boundary cases. UI picker and Save Changes tests are present but have not run.
 ## Verification and limits
 
 `cargo metadata --offline --locked`, `cargo fmt --all -- --check`, and
-`cargo test --offline --locked -j 1 -p wordcraft-engine --test legacy_import`
-pass; the targeted test run reports 5 passed, 0 failed.
+targeted `wordcraft-engine` integration tests pass: `legacy_import` reports
+5 passed, 0 failed; `safe_save` reports 6 passed, 0 failed. Both test runs
+used `--offline --locked -j 1` on Windows.
 The pinned `storytold/craft-libs` revision
 `d27646a5f7c8b4fc85d9dd3213b8c88b58e0088d` was fetched and inspected.
 A monitored single-job build completed the targeted engine tests within the

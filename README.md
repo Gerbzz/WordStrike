@@ -30,7 +30,7 @@ This screenshot shows the **older lightweight editor**, not the newer native fou
 
 ## Current status
 
-**Source-stage migration.** The newer native source is present. Its legacy import engine regression suite passed 5/5 tests on Windows against this pinned revision, covering conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. Cargo resolves the locked graph offline. The desktop editor and UI tests have not been built or run for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
+**Source-stage migration.** The newer native source is present. Its legacy import engine regression suite passed 5/5 tests on Windows against this pinned revision, covering conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. The targeted engine safe-save suite passed 6/6. Cargo resolves the locked graph offline. The desktop editor and UI tests have not been built or run for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
 
 ## Files and export
 
@@ -43,9 +43,10 @@ Install Rust 1.95 or newer (required by the pinned `craft-libs`). The native wor
 ```powershell
 cargo run --manifest-path native/wordstrike/Cargo.toml -p wordcraft --bin wordstrike
 cargo test --offline --locked -j 1 --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test legacy_import
+cargo test --offline --locked -j 1 --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test safe_save
 ```
 
-The engine regression command passed 5/5 tests on Windows for this revision. The desktop run command remains unverified. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
+The targeted engine commands passed 5/5 import and 6/6 safe-save tests on Windows for this revision. The desktop run command remains unverified. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
 
 To build and test the older lightweight editor independently:
 
