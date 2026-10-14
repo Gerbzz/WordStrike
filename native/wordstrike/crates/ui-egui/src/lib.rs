@@ -647,6 +647,10 @@ impl WordApp {
             self.dialog = Some(dialogs::Dialog::SaveChanges { name, then: id.to_string(), params, document: self.session.document_id() });
             return Ok(json!({"pending": "saveChanges"}));
         }
+        if id == "file.importLegacy" && params.get("path").is_none() {
+            let _ = self.ask_file(file_dialogs::FileDialogRequest::Open { purpose: "legacy".into() }, file_dialogs::AfterPick::LegacyImport);
+            return Ok(json!({"pending": "legacyImport"}));
+        }
         // The ribbon and context-menu Paste commands send no text: read the system clipboard's, as
         // Ctrl+V's paste event carries it (#584), and its HTML and RTF, which egui's paste event
         // doesn't carry (#687).
@@ -1879,6 +1883,7 @@ pub(crate) fn works_without_document(id: &str) -> bool {
         id,
         "file.new"
             | "file.open"
+            | "file.importLegacy"
             | "file.close"
             | "file.options"
             | "file.setAuthor"
@@ -1922,7 +1927,7 @@ fn discards_document(id: &str, params: &Value) -> bool {
     match id {
         "file.new" | "file.close" | "mailings.labels" => true,
         "mailings.envelopes" => params.get("add").and_then(Value::as_bool) != Some(true),
-        "file.open" => params.get("path").is_some(),
+        "file.open" | "file.importLegacy" => params.get("path").is_some(),
         "mailings.finish" => params.get("path").and_then(Value::as_str).is_none(),
         _ => false,
     }

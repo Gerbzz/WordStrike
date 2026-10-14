@@ -40,6 +40,7 @@ js-sys = "0.3"
 [dev-dependencies]
 egui_kittest = { workspace = true, features = ["wgpu", "snapshot"] }
 zip = { workspace = true }
+legacy-wordstrike = { package = "wordstrike", path = "../../../../apps/wordstrike" }
 
 [build-dependencies]
 serde_json = { workspace = true }

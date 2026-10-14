@@ -2432,6 +2432,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.31.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
+dependencies = [
+ "bitflags 2.13.2",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
+
+[[package]]
 name = "nohash-hasher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2850,7 +2862,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4097,6 +4109,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "typed-path"
+version = "0.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e28f89b80c87b8fb0cf04ab448d5dd0dd0ade2f8891bae878de66a75a28600e"
+
+[[package]]
 name = "typenum"
 version = "1.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4199,10 +4217,11 @@ checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
 name = "uuid"
-version = "1.27.0"
+version = "1.26.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "97277d36b9c3ace13e58fa6e753f8b0bbbf302a18dd193240d70f9e29681059a"
+checksum = "2ef6dac1e96601b4fb3acccccff2139741fcb757cb9a36089bf5be91cfb285ce"
 dependencies = [
+ "getrandom 0.4.3",
  "js-sys",
  "serde_core",
  "wasm-bindgen",
@@ -5190,7 +5209,7 @@ dependencies = [
  "wordcraft-doc",
  "wordcraft-geom",
  "zeroize",
- "zip",
+ "zip 3.0.0",
 ]
 
 [[package]]
@@ -5204,6 +5223,7 @@ dependencies = [
  "regex-automata",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror 2.0.21",
  "wordcraft-doc",
  "wordcraft-docbin",
@@ -5215,8 +5235,9 @@ dependencies = [
  "wordcraft-pdf",
  "wordcraft-proof",
  "wordcraft-render",
+ "wordstrike",
  "zeroize",
- "zip",
+ "zip 3.0.0",
 ]
 
 [[package]]
@@ -5242,7 +5263,7 @@ dependencies = [
  "quick-xml",
  "wordcraft-doc",
  "wordcraft-geom",
- "zip",
+ "zip 3.0.0",
 ]
 
 [[package]]
@@ -5355,8 +5376,9 @@ dependencies = [
  "wordcraft-layout",
  "wordcraft-render",
  "wordcraft-zotero",
+ "wordstrike",
  "zbus",
- "zip",
+ "zip 3.0.0",
 ]
 
 [[package]]
@@ -5390,6 +5412,19 @@ dependencies = [
  "wordcraft-docx",
  "wordcraft-engine",
  "wordcraft-formats",
+]
+
+[[package]]
+name = "wordstrike"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "quick-xml",
+ "serde",
+ "serde_json",
+ "sha2",
+ "uuid",
+ "zip 9.0.3",
 ]
 
 [[package]]
@@ -5719,6 +5754,20 @@ dependencies = [
  "indexmap",
  "memchr",
  "zopfli",
+]
+
+[[package]]
+name = "zip"
+version = "9.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2d98561b612a84ae525331a7a094429ef8a5772514ed507ff6db5f54badc971"
+dependencies = [
+ "crc32fast",
+ "flate2",
+ "indexmap",
+ "memchr",
+ "nix",
+ "typed-path",
 ]
 
 [[package]]

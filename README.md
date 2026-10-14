@@ -25,12 +25,12 @@ This screenshot shows the **older lightweight editor**, not the newer native fou
 
 - `native/wordstrike` contains the complete source graph of the WordCraft document, layout, DOCX, PDF, proofing, command, and egui desktop crates, pinned to upstream commit [`04f6f53`](https://github.com/storytold/wordcraft/commit/04f6f53b8a4d8140c7bb62f949b0a6099a473da1).
 - The desktop target is named `wordstrike`, uses the original crane artwork and WordStrike identity, and exposes the donor's ribbon, page canvas, formatting, review, and document commands. Internal Rust crate names remain unchanged for dependency compatibility.
-- `file.importLegacy` converts the original `.wstrike` archive into a new unsaved native document. It maps titles, level 1–2 headings, styled paragraph runs, page setup, page breaks, and PNG/JPEG images with alt text. It refuses lists, invalid image references, unbound object markers, and unsupported heading levels rather than silently dropping them.
+- File > Open offers an import picker for the original `.wstrike` archive. `file.importLegacy` converts it into a new unsaved native document, prompting before replacing unsaved work. It maps titles, level 1-2 headings, styled paragraph runs, page setup, page breaks, and bounded, fully decoded PNG/JPEG images with alt text. It refuses lists, invalid image references, unbound object markers, and unsupported heading levels rather than silently dropping them.
 - `apps/wordstrike` remains the original lightweight editor. It keeps its own archive format and can still be built independently.
 
 ## Current status
 
-**Source-stage migration.** The newer native source is present, but this pinned revision plus the legacy bridge has not been built or run. Cargo parses its manifests; full offline dependency resolution is blocked because the pinned `craft-libs` Git dependency is not cached on this machine. The copied bridge had passed 2/2 synthetic import tests against an older WordCraft pin, which is not a test result for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
+**Source-stage migration.** The newer native source is present, but this pinned revision plus the legacy bridge has not been built or run. Cargo parses its manifests and resolves the locked graph offline. An attempted regression build was stopped before tests ran when target growth approached the local disk cap. The copied bridge had passed 2/2 synthetic import tests against an older WordCraft pin, which is not a test result for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
 
 ## Files and export
 
@@ -38,14 +38,14 @@ The lightweight editor uses `.wstrike` as its editable source. Its DOCX import c
 
 ## Build and test
 
-Install Rust 1.90 or newer. The native workspace needs crates.io packages and the pinned `storytold/craft-libs` Git dependency. From the repository root:
+Install Rust 1.95 or newer (required by the pinned `craft-libs`). The native workspace needs crates.io packages and the pinned `storytold/craft-libs` Git dependency. From the repository root:
 
 ```powershell
 cargo run --manifest-path native/wordstrike/Cargo.toml -p wordcraft --bin wordstrike
 cargo test --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test legacy_import
 ```
 
-These are build and regression commands for the source-stage native foundation, not passing results for this revision. Its `Cargo.lock` came from the pinned upstream snapshot and must be resolved for the added local legacy dependency before a locked build.
+These are build and regression commands for the source-stage native foundation, not passing results for this revision. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
 
 To build and test the older lightweight editor independently:
 

@@ -294,6 +294,9 @@ fn open_list(app: &mut WordApp, ui: &mut Ui) {
 
 fn open_page(app: &mut WordApp, ui: &mut Ui) {
     heading(ui, "Open");
+    if ui.button(egui::RichText::new(tl!("Import older WordStrike document (.wstrike)")).font(medium(14.0))).clicked() {
+        let _ = app.run("file.importLegacy", json!({}));
+    }
     if ui.button(egui::RichText::new(tl!("Browse…")).font(medium(14.0))).clicked() {
         let _ = app.run("ui.openFileDialog", json!({}));
     }

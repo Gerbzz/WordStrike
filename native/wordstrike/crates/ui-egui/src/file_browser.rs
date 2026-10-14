@@ -278,6 +278,7 @@ impl WordApp {
             return;
         }
         let (req, after) = match purpose {
+            "legacy" => (FileDialogRequest::Open { purpose: "legacy".into() }, AfterPick::LegacyImport),
             "picture" => (FileDialogRequest::Open { purpose: "picture".into() }, AfterPick::Picture),
             "recipients" => (FileDialogRequest::Open { purpose: "recipients".into() }, AfterPick::Recipients),
             "save" => (FileDialogRequest::Save { name: self.default_save_name() }, AfterPick::SaveAs(crate::file_dialogs::AfterSave::Nothing)),

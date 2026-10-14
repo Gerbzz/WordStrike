@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 /// The app's settings folder (preferences, logs, key files): macOS
 /// `~/Library/Application Support/WordStrike`, Windows `%APPDATA%\WordStrike`, otherwise
-/// `$XDG_CONFIG_HOME/wordcraft` or `~/.config/wordcraft`.
+/// `$XDG_CONFIG_HOME/wordstrike` or `~/.config/wordstrike`.
 pub fn settings_dir() -> Option<PathBuf> {
     if cfg!(target_os = "macos") {
         std::env::var_os("HOME").map(|h| PathBuf::from(h).join("Library/Application Support/WordStrike"))
@@ -15,7 +15,7 @@ pub fn settings_dir() -> Option<PathBuf> {
         std::env::var_os("XDG_CONFIG_HOME")
             .map(PathBuf::from)
             .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))
-            .map(|c| c.join("wordcraft"))
+            .map(|c| c.join("wordstrike"))
     }
 }
 
@@ -64,7 +64,7 @@ mod tests {
 
     #[test]
     fn key_file_per_instance() {
-        let dir = Path::new("/settings/wordcraft");
+        let dir = Path::new("/settings/wordstrike");
         assert_eq!(key_path_for(dir, Some("1234"), 7981), dir.join("control-key.1234"));
         assert_eq!(key_path_for(dir, None, 7981), dir.join("control-key.local-7981"));
         assert_eq!(key_path_for(dir, None, 7982), dir.join("control-key.local-7982"));
@@ -77,7 +77,7 @@ mod tests {
     fn settings_dir_is_the_apps_folder() {
         if let Some(d) = settings_dir() {
             let name = d.file_name().and_then(|n| n.to_str()).unwrap_or("");
-            assert!(name == "wordcraft" || name == "WordStrike", "{}", d.display());
+            assert!(name == "wordstrike" || name == "WordStrike", "{}", d.display());
         }
     }
 }

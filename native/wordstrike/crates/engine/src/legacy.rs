@@ -53,14 +53,23 @@ pub fn convert_path(path: &Path) -> Result<Document, String> {
             legacy_wordstrike::Block::PageBreak => Paragraph::with_text(&PAGE_BREAK.to_string(), CharProps::default()),
             legacy_wordstrike::Block::Image { hash, alt } => {
                 let bytes = source.assets.get(hash).ok_or_else(|| format!("block {index}: image bytes are missing"))?;
-                let reader = image::ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().map_err(|e| e.to_string())?;
-                let (width, height) = reader.into_dimensions().map_err(|e| e.to_string())?;
-                if width == 0 || height == 0 {
-                    return Err(format!("block {index}: image dimensions are invalid"));
+                if bytes.len() > 10 * 1024 * 1024 {
+                    return Err(format!("block {index}: image exceeds 10 MiB"));
                 }
+                let format = image::guess_format(bytes).map_err(|e| e.to_string())?;
+                let ext = match format {
+                    image::ImageFormat::Png => "png",
+                    image::ImageFormat::Jpeg => "jpeg",
+                    _ => return Err(format!("block {index}: only PNG and JPEG images can be imported")),
+                };
+                let reader = image::ImageReader::with_format(std::io::Cursor::new(bytes), format);
+                let (width, height) = reader.into_dimensions().map_err(|e| e.to_string())?;
+                if width == 0 || height == 0 || width > 8192 || height > 8192 || u64::from(width) * u64::from(height) > 20_000_000 {
+                    return Err(format!("block {index}: image dimensions exceed the import limit"));
+                }
+                image::load_from_memory_with_format(bytes, format).map_err(|e| format!("block {index}: image is incomplete or invalid: {e}"))?;
                 let w = (setup.width_pt - 2.0 * setup.margin_pt).min(420.0) as f32;
                 let h = w * height as f32 / width as f32;
-                let ext = if bytes.starts_with(&[0x89, b'P', b'N', b'G']) { "png" } else { "jpeg" };
                 let media = doc.add_media(bytes.clone(), ext);
                 let mut paragraph = Paragraph::new();
                 paragraph.text.push(OBJ);

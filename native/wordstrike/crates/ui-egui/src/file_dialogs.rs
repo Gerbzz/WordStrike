@@ -20,7 +20,7 @@ use crate::WordApp;
 /// A file dialog the app asks the host to show ([`Services::file_dialog`](crate::Services::file_dialog)).
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum FileDialogRequest {
-    /// Pick a file to open; `purpose` says what for (`document`, `picture`, `recipients`, `font`), as for
+    /// Pick a file to open; `purpose` says what for (`document`, `legacy`, `picture`, `recipients`, `font`), as for
     /// `pick_open`.
     Open { purpose: String },
     /// Pick a path to save to, given a suggested file name.
@@ -40,6 +40,7 @@ const DOCUMENTS: &[&str] = &["docx", "docm", "dotx", "dotm", "doc", "dot", "odt"
 pub fn open_filters(purpose: &str) -> &'static [(&'static str, &'static [&'static str])] {
     match purpose {
         "picture" => &[("Pictures", PICTURES)],
+        "legacy" => &[("Older WordStrike documents", &["wstrike"])],
         "font" => &[("Fonts", wordcraft_fonts::FONT_FILE_EXTS)],
         "recipients" => &[("Recipient lists", &["csv", "tsv", "txt", "xlsx", "xlsm", "ods"]), ("All files", &["*"])],
         _ => &[("Documents", DOCUMENTS), ("Word document", &["docx"]), ("All files", &["*"])],
@@ -50,6 +51,8 @@ pub fn open_filters(purpose: &str) -> &'static [(&'static str, &'static [&'stati
 pub(crate) enum AfterPick {
     /// Open the picked document.
     OpenDocument,
+    /// Convert an older .wstrike archive into a new document requiring Save As.
+    LegacyImport,
     /// Insert the picked picture, or replace the pending Change Picture target.
     Picture,
     /// Save the document there, then carry on.
@@ -185,6 +188,14 @@ impl WordApp {
                 let Some(path) = picked else { return Ok(json!({"cancelled": true})) };
                 let r = self.run("file.open", json!({"path": path}));
                 self.ui.backstage = false;
+                r
+            }
+            AfterPick::LegacyImport => {
+                let Some(path) = picked else { return Ok(json!({"cancelled": true})) };
+                let r = self.run("file.importLegacy", json!({"path": path}));
+                if r.is_ok() && !matches!(&r, Ok(v) if v.get("pending").is_some()) {
+                    self.ui.backstage = false;
+                }
                 r
             }
             AfterPick::Picture => {
@@ -371,6 +382,58 @@ mod tests {
 
     fn saved_text(path: &std::path::Path) -> String {
         wordcraft_engine::io::open_path(path).unwrap().plain_text(wordcraft_doc::StoryRef::Body)
+    }
+
+    fn legacy_archive(dir: &std::path::Path) -> std::path::PathBuf {
+        let path = dir.join("old.wstrike");
+        let mut doc = legacy_wordstrike::Document::default();
+        doc.blocks.push(legacy_wordstrike::Block::Title { text: "Imported note".into() });
+        let mut editor = legacy_wordstrike::Editor::from_document(doc).unwrap();
+        legacy_wordstrike::save_document(&mut editor, &path).unwrap();
+        path
+    }
+
+    #[test]
+    fn legacy_import_picker_cancel_keeps_unsaved_document() {
+        let (mut app, shown) = async_app();
+        typed(&mut app);
+        let document = app.session.document_id();
+        app.run("file.importLegacy", json!({})).unwrap();
+        assert_eq!(shown.borrow()[0].0, FileDialogRequest::Open { purpose: "legacy".into() });
+        assert_eq!(app.session.document_id(), document);
+        answer(&shown, None);
+        assert_eq!(app.poll_file_dialog().unwrap().unwrap(), json!({"cancelled": true}));
+        assert_eq!(app.session.document_id(), document);
+        assert!(body_text(&app).contains(UNSAVED));
+        assert!(app.session.dirty);
+    }
+
+    #[test]
+    fn legacy_import_picker_guards_unsaved_work_and_requires_save_after_conversion() {
+        let dir = scratch("legacy-guard");
+        let source = legacy_archive(&dir);
+        let original = std::fs::read(&source).unwrap();
+        let (mut app, shown) = async_app();
+        typed(&mut app);
+        let document = app.session.document_id();
+        app.run("file.importLegacy", json!({})).unwrap();
+        answer(&shown, Some(&source.to_string_lossy()));
+        assert_eq!(app.poll_file_dialog().unwrap().unwrap(), json!({"pending": "saveChanges"}));
+        assert_eq!(app.session.document_id(), document, "the picker must not replace unsaved work");
+        app.run("ui.saveChanges", json!({"answer": "cancel"})).unwrap();
+        assert_eq!(app.session.document_id(), document);
+        assert!(body_text(&app).contains(UNSAVED));
+
+        app.run("file.importLegacy", json!({"path": source})).unwrap();
+        assert_eq!(app.dialog.as_ref().map(|d| d.name()), Some("saveChanges"));
+        app.run("ui.saveChanges", json!({"answer": "dontSave"})).unwrap();
+        assert_eq!(body_text(&app), "Imported note");
+        assert!(app.session.path.is_none());
+        assert!(app.session.dirty);
+        assert!(!app.close_requested(), "converted work must ask before closing");
+        assert_eq!(app.dialog.as_ref().map(|d| d.name()), Some("saveChanges"));
+        assert_eq!(std::fs::read(&source).unwrap(), original);
+        let _ = std::fs::remove_dir_all(dir);
     }
 
     /// Save As returns at once (the UI keeps running); the frame loop saves once the answer arrives.

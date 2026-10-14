@@ -177,11 +177,13 @@ fn import_legacy(s: &mut Session, v: &Value) -> CmdResult {
     if !source.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("wstrike")) {
         return Err(CmdError::Params("choose a .wstrike file".into()));
     }
+    crate::file_access::check_read(path).map_err(CmdError::Failed)?;
     let doc = crate::legacy::convert_path(source).map_err(CmdError::Failed)?;
     let blocks = doc.body.len();
     let images = doc.media.len();
     s.set_document(doc);
     s.path = None;
+    s.dirty = true;
     Ok(json!({"source": path, "blocks": blocks, "images": images, "saveAsRequired": true, "historyReset": true}))
 }
 
