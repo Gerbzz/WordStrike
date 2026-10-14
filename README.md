@@ -15,6 +15,10 @@
 
 WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
 
+![WordStrike native editor showing a synthetic field-notes document with structured text, a blue chart, and a page break](assets/screenshots/wordstrike-editor.png)
+
+The native editor opened a self-authored field-notes project for this capture. The image shows the document structure, editable blocks, page setup, and toolbar; it does not establish an interactive or accessibility review. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
+
 <p align="center"><a href="#highlights">Highlights</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
 
 ## Highlights
@@ -25,7 +29,7 @@ WordStrike is a Windows-first workspace for building documents from text blocks 
 
 ## Current status
 
-Source-only editor prototype. The standalone package passed 21 locked tests and built a Windows native executable, but no installer or release is supplied. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
+Native editor source prototype. The standalone package passed 21 locked tests at the earlier checkpoint. The capture-only source change built a Windows native executable offline; no tests were rerun for that change and no installer or release is supplied. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
 
 ## Files and export
 
