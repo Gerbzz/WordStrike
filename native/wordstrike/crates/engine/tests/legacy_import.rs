@@ -74,6 +74,18 @@ fn legacy_import_honors_read_root_and_preserves_active_document_on_denial() {
     assert!(error.to_string().contains("outside the read root"), "{error}");
     assert_eq!(session.document_id(), original_id);
     assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this work");
+    let alias = allowed.join("outside-link.wstrike");
+    #[cfg(windows)]
+    let linked = std::os::windows::fs::symlink_file(&denied, &alias).is_ok();
+    #[cfg(unix)]
+    let linked = std::os::unix::fs::symlink(&denied, &alias).is_ok();
+    #[cfg(not(any(windows, unix)))]
+    let linked = false;
+    if linked {
+        let error = file_access::confine(Some(&roots), || session.run("file.importLegacy", &json!({"path": alias}))).unwrap_err();
+        assert!(error.to_string().contains("outside the read root"), "{error}");
+        assert_eq!(session.document_id(), original_id);
+    }
     let write_only = file_access::AutomationRoots::new(None, Some(&allowed)).unwrap().unwrap();
     let error = file_access::confine(Some(&write_only), || session.run("file.importLegacy", &json!({"path": accepted}))).unwrap_err();
     assert!(error.to_string().contains("read authority is absent"), "{error}");
@@ -82,6 +94,34 @@ fn legacy_import_honors_read_root_and_preserves_active_document_on_denial() {
     assert_eq!(session.doc.plain_text(StoryRef::Body), "Imported note");
     assert!(session.dirty);
     let _ = std::fs::remove_dir_all(base);
+}
+
+#[test]
+fn legacy_import_enforces_image_dimension_boundary_before_decode() {
+    for (width, accepted) in [(8192, true), (8193, false)] {
+        let source = scratch(&format!("image-width-{width}")).with_extension("wstrike");
+        let pixels = image::RgbaImage::from_pixel(width, 1, image::Rgba([0, 90, 190, 255]));
+        let mut png = Vec::new();
+        image::DynamicImage::ImageRgba8(pixels).write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
+        let hash = format!("{:x}", Sha256::digest(&png));
+        let mut doc = LegacyDocument::default();
+        doc.assets.insert(hash.clone(), png);
+        doc.blocks.push(Block::Image { hash, alt: "Wide chart".into() });
+        let mut editor = Editor::from_document(doc).unwrap();
+        save_document(&mut editor, &source).unwrap();
+        let mut session = Session::new(wordcraft_doc::Document::from_text("Keep this work"));
+        let result = session.run("file.importLegacy", &json!({"path": source}));
+        if accepted {
+            result.unwrap();
+            assert_eq!(session.doc.media.len(), 1);
+            assert!(session.dirty);
+        } else {
+            let error = result.unwrap_err();
+            assert!(error.to_string().contains("image dimensions exceed"), "{error}");
+            assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this work");
+        }
+        let _ = std::fs::remove_file(source);
+    }
 }
 
 #[test]

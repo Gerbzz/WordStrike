@@ -397,6 +397,7 @@ mod tests {
     fn legacy_import_picker_cancel_keeps_unsaved_document() {
         let (mut app, shown) = async_app();
         typed(&mut app);
+        app.ui.backstage = true;
         let document = app.session.document_id();
         app.run("file.importLegacy", json!({})).unwrap();
         assert_eq!(shown.borrow()[0].0, FileDialogRequest::Open { purpose: "legacy".into() });
@@ -415,6 +416,7 @@ mod tests {
         let original = std::fs::read(&source).unwrap();
         let (mut app, shown) = async_app();
         typed(&mut app);
+        app.ui.backstage = true;
         let document = app.session.document_id();
         app.run("file.importLegacy", json!({})).unwrap();
         answer(&shown, Some(&source.to_string_lossy()));
@@ -423,16 +425,64 @@ mod tests {
         app.run("ui.saveChanges", json!({"answer": "cancel"})).unwrap();
         assert_eq!(app.session.document_id(), document);
         assert!(body_text(&app).contains(UNSAVED));
+        assert!(app.ui.backstage, "cancel leaves the user on File");
 
         app.run("file.importLegacy", json!({"path": source})).unwrap();
         assert_eq!(app.dialog.as_ref().map(|d| d.name()), Some("saveChanges"));
         app.run("ui.saveChanges", json!({"answer": "dontSave"})).unwrap();
         assert_eq!(body_text(&app), "Imported note");
+        assert!(!app.ui.backstage, "a resumed import returns from File to the document");
+        assert!(app.canvas.want_focus);
         assert!(app.session.path.is_none());
         assert!(app.session.dirty);
         assert!(!app.close_requested(), "converted work must ask before closing");
         assert_eq!(app.dialog.as_ref().map(|d| d.name()), Some("saveChanges"));
         assert_eq!(std::fs::read(&source).unwrap(), original);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn legacy_import_saves_old_work_before_resuming_from_backstage() {
+        let dir = scratch("legacy-save-first");
+        let source = legacy_archive(&dir);
+        let saved = dir.join("previous.docx");
+        let (mut app, shown) = async_app();
+        typed(&mut app);
+        app.ui.backstage = true;
+        app.run("file.importLegacy", json!({})).unwrap();
+        answer(&shown, Some(&source.to_string_lossy()));
+        assert_eq!(app.poll_file_dialog().unwrap().unwrap(), json!({"pending": "saveChanges"}));
+        assert_eq!(app.run("ui.saveChanges", json!({"answer": "save"})).unwrap(), json!({"pending": "saveAs"}));
+        assert_eq!(shown.borrow()[0].0, FileDialogRequest::Save { name: "Document1.docx".into() });
+        answer(&shown, Some(&saved.to_string_lossy()));
+        let result = app.poll_file_dialog().unwrap().unwrap();
+        assert_eq!(result["done"], true);
+        assert!(saved_text(&saved).contains(UNSAVED));
+        assert_eq!(body_text(&app), "Imported note");
+        assert!(app.session.dirty);
+        assert!(app.session.path.is_none());
+        assert!(!app.ui.backstage);
+        assert!(app.canvas.want_focus);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn legacy_import_opens_from_start_screen() {
+        let dir = scratch("legacy-start");
+        let source = legacy_archive(&dir);
+        let (mut app, shown) = async_app();
+        assert!(app.start_screen());
+        assert!(!app.has_document());
+        assert!(app.ui.backstage);
+        app.run("file.importLegacy", json!({})).unwrap();
+        assert_eq!(shown.borrow()[0].0, FileDialogRequest::Open { purpose: "legacy".into() });
+        answer(&shown, Some(&source.to_string_lossy()));
+        app.poll_file_dialog().unwrap().unwrap();
+        assert!(app.has_document());
+        assert_eq!(body_text(&app), "Imported note");
+        assert!(app.session.dirty);
+        assert!(!app.ui.backstage);
+        assert!(app.canvas.want_focus);
         let _ = std::fs::remove_dir_all(dir);
     }
 

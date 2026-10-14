@@ -760,6 +760,10 @@ impl WordApp {
             if matches!(self.dialog, Some(dialogs::Dialog::SaveChanges { .. })) {
                 self.dialog = None;
             }
+            if id == "file.importLegacy" && r.is_ok() {
+                self.ui.backstage = false;
+                self.canvas.want_focus = true;
+            }
         }
         // An explicit save to the document's own file lets AutoSave keep writing there.
         if let Ok(v) = &r
