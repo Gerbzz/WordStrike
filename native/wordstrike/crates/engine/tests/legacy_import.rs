@@ -9,6 +9,10 @@ fn scratch(name: &str) -> std::path::PathBuf {
     std::env::temp_dir().join(format!("wordstrike-legacy-{name}-{}-{id}", std::process::id()))
 }
 
+fn asset_hash(bytes: &[u8]) -> String {
+    Sha256::digest(bytes).iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
 #[test]
 fn rich_blocks_page_setup_and_image_import_without_changing_source() {
     let picture = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../../fixtures/wordstrike/blue-chart.png");
@@ -103,7 +107,7 @@ fn legacy_import_enforces_image_dimension_boundary_before_decode() {
         let pixels = image::RgbaImage::from_pixel(width, 1, image::Rgba([0, 90, 190, 255]));
         let mut png = Vec::new();
         image::DynamicImage::ImageRgba8(pixels).write_to(&mut std::io::Cursor::new(&mut png), image::ImageFormat::Png).unwrap();
-        let hash = format!("{:x}", Sha256::digest(&png));
+        let hash = asset_hash(&png);
         let mut doc = LegacyDocument::default();
         doc.assets.insert(hash.clone(), png);
         doc.blocks.push(Block::Image { hash, alt: "Wide chart".into() });
@@ -130,7 +134,7 @@ fn legacy_import_rejects_unsupported_and_truncated_image_payloads() {
     let truncated_png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89";
     for (name, bytes) in [("gif", gif.as_slice()), ("truncated", truncated_png.as_slice())] {
         let source = scratch(name).with_extension("wstrike");
-        let hash = format!("{:x}", Sha256::digest(bytes));
+        let hash = asset_hash(bytes);
         let mut doc = LegacyDocument::default();
         doc.assets.insert(hash.clone(), bytes.to_vec());
         doc.blocks.push(Block::Image { hash, alt: "Preview".into() });

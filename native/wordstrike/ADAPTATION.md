@@ -40,17 +40,19 @@ font metrics, and pagination can render differently in the new model.
 The converter and two self-authored regression tests came from a local
 WordCraft adaptation at upstream commit
 [`191d8fd48ec28b959dc269159a3b0f2c8b885669`](https://github.com/storytold/wordcraft/commit/191d8fd48ec28b959dc269159a3b0f2c8b885669),
-where those tests passed 2/2 on Windows. Their APIs were reviewed against the
-newer pinned source, but **they have not run on this revision**. Additional
-read-root, image, and UI picker regression tests are present but have not run.
+where those tests passed 2/2 on Windows. The current revision's expanded
+engine import suite passed 5/5 on Windows, including read-root and image
+boundary cases. UI picker and Save Changes tests are present but have not run.
 
 ## Verification and limits
 
-`cargo metadata --offline --locked` and `cargo fmt --all -- --check` pass.
+`cargo metadata --offline --locked`, `cargo fmt --all -- --check`, and
+`cargo test --offline --locked -j 1 -p wordcraft-engine --test legacy_import`
+pass; the targeted test run reports 5 passed, 0 failed.
 The pinned `storytold/craft-libs` revision
 `d27646a5f7c8b4fc85d9dd3213b8c88b58e0088d` was fetched and inspected.
-A single-job regression build was stopped before the tests ran because target
-growth approached the local disk cap. No completed build, release, installer, interactive acceptance, or
+A monitored single-job build completed the targeted engine tests within the
+local disk budget. No desktop editor build, release, installer, interactive acceptance, or
 format-fidelity claim is made for this revision. The donor `xtask assets` audit
 references upstream assets intentionally excluded here and needs adaptation.
 

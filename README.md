@@ -30,7 +30,7 @@ This screenshot shows the **older lightweight editor**, not the newer native fou
 
 ## Current status
 
-**Source-stage migration.** The newer native source is present, but this pinned revision plus the legacy bridge has not been built or run. Cargo parses its manifests and resolves the locked graph offline. An attempted regression build was stopped before tests ran when target growth approached the local disk cap. The copied bridge had passed 2/2 synthetic import tests against an older WordCraft pin, which is not a test result for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
+**Source-stage migration.** The newer native source is present. Its legacy import engine regression suite passed 5/5 tests on Windows against this pinned revision, covering conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. Cargo resolves the locked graph offline. The desktop editor and UI tests have not been built or run for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
 
 ## Files and export
 
@@ -42,10 +42,10 @@ Install Rust 1.95 or newer (required by the pinned `craft-libs`). The native wor
 
 ```powershell
 cargo run --manifest-path native/wordstrike/Cargo.toml -p wordcraft --bin wordstrike
-cargo test --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test legacy_import
+cargo test --offline --locked -j 1 --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test legacy_import
 ```
 
-These are build and regression commands for the source-stage native foundation, not passing results for this revision. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
+The engine regression command passed 5/5 tests on Windows for this revision. The desktop run command remains unverified. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
 
 To build and test the older lightweight editor independently:
 
