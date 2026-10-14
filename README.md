@@ -30,7 +30,7 @@ This screenshot shows the **older lightweight editor**, not the newer native fou
 
 ## Current status
 
-**Source-stage migration.** The newer native source is present. Its legacy import engine regression suite passed 5/5 tests on Windows against this pinned revision, covering conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. The targeted engine safe-save suite passed 6/6. Cargo resolves the locked graph offline. The desktop editor and UI tests have not been built or run for this revision. No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity need verification.
+**Source-stage migration.** The newer native source is present. [Windows CI](https://github.com/Gerbzz/WordStrike/actions/runs/38556741197) built the desktop editor and passed the targeted legacy import engine tests (5/5), safe-save tests (6/6), import UI tests (4/4), and Save Changes UI guard (1/1). The engine cases cover conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. Cargo also resolves the locked graph offline locally. No installer or binary release is supplied. The editor has not been launched and visually accepted for this revision; interactive editing, accessibility, and broad file fidelity need verification.
 
 ## Files and export
 
@@ -44,9 +44,11 @@ Install Rust 1.95 or newer (required by the pinned `craft-libs`). The native wor
 cargo run --manifest-path native/wordstrike/Cargo.toml -p wordcraft --bin wordstrike
 cargo test --offline --locked -j 1 --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test legacy_import
 cargo test --offline --locked -j 1 --manifest-path native/wordstrike/Cargo.toml -p wordcraft-engine --test safe_save
+cargo test --locked --manifest-path native/wordstrike/Cargo.toml -p wordcraft-ui-egui --lib legacy_import
+cargo test --locked --manifest-path native/wordstrike/Cargo.toml -p wordcraft-ui-egui --lib save_changes_waits_for_the_save_as_answer
 ```
 
-The targeted engine commands passed 5/5 import and 6/6 safe-save tests on Windows for this revision. The desktop run command remains unverified. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
+The targeted engine commands passed locally and in CI. The UI commands passed in CI. The desktop editor compiled in CI; the run command remains unverified. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
 
 To build and test the older lightweight editor independently:
 

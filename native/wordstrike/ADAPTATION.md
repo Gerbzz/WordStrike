@@ -42,7 +42,8 @@ WordCraft adaptation at upstream commit
 [`191d8fd48ec28b959dc269159a3b0f2c8b885669`](https://github.com/storytold/wordcraft/commit/191d8fd48ec28b959dc269159a3b0f2c8b885669),
 where those tests passed 2/2 on Windows. The current revision's expanded
 engine import suite passed 5/5 on Windows, including read-root and image
-boundary cases. UI picker and Save Changes tests are present but have not run.
+boundary cases. Windows CI also passed the import UI tests (4/4) and the
+Save Changes UI guard (1/1).
 
 ## Verification and limits
 
@@ -53,7 +54,11 @@ used `--offline --locked -j 1` on Windows.
 The pinned `storytold/craft-libs` revision
 `d27646a5f7c8b4fc85d9dd3213b8c88b58e0088d` was fetched and inspected.
 A monitored single-job build completed the targeted engine tests within the
-local disk budget. No desktop editor build, release, installer, interactive acceptance, or
+local disk budget. A later local desktop build stopped at its 2 GiB target-growth
+limit. [Windows CI run 38556741197](https://github.com/Gerbzz/WordStrike/actions/runs/38556741197)
+built the desktop editor and passed the same engine tests plus 4 import UI and
+1 Save Changes UI test. CI disabled debug info and incremental compilation to
+fit the standard hosted runner. No release, installer, interactive acceptance, or
 format-fidelity claim is made for this revision. The donor `xtask assets` audit
 references upstream assets intentionally excluded here and needs adaptation.
 
