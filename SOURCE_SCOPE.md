@@ -9,3 +9,13 @@
 - Both the Office checkpoint and this standalone layout passed `cargo test --locked --manifest-path apps/wordstrike/Cargo.toml --all-features` (21 tests) and built `wordstrike-native`. Independent review reran existing native UI, import and donor tests and inspected searchable PDF output from small fixtures. Direct native input acceptance remains pending.
 
 This is a source package, not a redistributable binary release. Review transitive dependencies and notices before binary distribution.
+
+## Native foundation added after the original package
+
+`native/wordstrike` now stages a fuller WordStrike source foundation from
+`storytold/wordcraft` commit `04f6f53b8a4d8140c7bb62f949b0a6099a473da1`.
+Its original license/notice/attribution files are retained there. The approved
+WordStrike crane PNG replaces donor app artwork. `apps/wordstrike`, the earlier
+vendor subset, fixtures, and their history remain intact. See
+[`native/wordstrike/ADAPTATION.md`](native/wordstrike/ADAPTATION.md) for the
+exact copied scope, adaptation, legacy import, and unverified build status.

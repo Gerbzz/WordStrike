@@ -1,7 +1,5 @@
 # Native editor runtime check
 
-This record documents a native editor preview from [draft PR #1](https://github.com/Gerbzz/WordStrike/pull/1). The public `main` branch still contains the earlier lightweight editor source; the screenshot below was captured from the tested draft executable, not built from `main`.
-
 The [draft WordStrike foundation PR](https://github.com/Gerbzz/WordStrike/pull/1) was built by [Windows Actions run 38668293554](https://github.com/Gerbzz/WordStrike/actions/runs/38668293554). That run compiled the `wordstrike` desktop target, passed its focused legacy import and safe-save engine tests, passed its import UI and Save Changes guard tests, and retained a one-day executable artifact for local acceptance. The source head was `03ea913de5cada3b391acfc251f762158e53df28`; the tested PR merge build was `637db096b2b1d4a70082434fac01b6d988ea9325`. The 69,568,000-byte debug executable reported `wordstrike 0.6.1 (dev)` and SHA-256 `D84630DCCF0618FEB9D6FCEEF4DDEC6D20DA4AE9673F2CF498E5F35FABD12393`.
 
 On 15 October 2026 UTC, that exact executable ran on Windows with app settings directed to an isolated workspace folder. A self-authored `.wstrike` fixture (SHA-256 `D2C671F5D9B2BC1E6ECB502A6B1C9A4FD434441C7C45246A50DEB963BF7C16ED`) contained fictional field notes and a small original blue chart. The app's local control interface performed these checks:
