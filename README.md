@@ -15,9 +15,9 @@
 
 WordStrike is a Windows-first document editor. This repository contains a full native editing foundation for page layout, rich text, DOCX, PDF, proofing, and a ribbon-style desktop interface, alongside the original lightweight `.wstrike` editor and an explicit import path between them.
 
-![WordStrike native editor showing a synthetic field-notes document with structured text, a blue chart, and a page break](assets/screenshots/wordstrike-editor.png)
+![Current WordStrike native editor reopened on a synthetic field-notes document](assets/screenshots/wordstrike-native-current.png)
 
-This screenshot shows the **older lightweight editor**, not the newer native foundation. It opened a self-authored field-notes project for this capture. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
+This is the **current native foundation**, captured after importing a self-authored `.wstrike` fixture, saving it as DOCX, and reopening the DOCX. See [native runtime evidence](docs/NATIVE_RUNTIME_ACCEPTANCE.md). The [older lightweight editor screenshot](assets/screenshots/wordstrike-editor.png) remains available with its [own provenance](docs/SCREENSHOT_PROVENANCE.md).
 
 <p align="center"><a href="#foundation">Foundation</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
 
@@ -30,7 +30,7 @@ This screenshot shows the **older lightweight editor**, not the newer native fou
 
 ## Current status
 
-**Source-stage migration.** The newer native source is present. [Windows CI for source revision `a4f22da`](https://github.com/Gerbzz/WordStrike/actions/runs/38561143477) built the desktop editor and passed the targeted legacy import engine tests (5/5), safe-save tests (6/6), import UI tests (4/4), and Save Changes UI guard (1/1). The engine cases cover conversion, Save As and reopen, read-root confinement, invalid images, and the image dimension boundary. Cargo also resolves the locked graph offline locally. No installer or binary release is supplied. The editor has not been launched and visually accepted for this revision; interactive editing, accessibility, and broad file fidelity need verification.
+**Native foundation in draft review.** [Windows CI for draft source `03ea913`](https://github.com/Gerbzz/WordStrike/actions/runs/38668293554) built the desktop editor and passed the targeted legacy import, safe-save, import UI, and Save Changes guard tests. A CI-built executable from that run was launched on Windows with an isolated synthetic document: import, DOCX Save As, source preservation, DOCX reopen, and an authentic rendered window capture passed. See [the exact runtime receipt and limits](docs/NATIVE_RUNTIME_ACCEPTANCE.md). No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity still need verification.
 
 ## Files and export
 
@@ -48,7 +48,7 @@ cargo test --locked --manifest-path native/wordstrike/Cargo.toml -p wordcraft-ui
 cargo test --locked --manifest-path native/wordstrike/Cargo.toml -p wordcraft-ui-egui --lib save_changes_waits_for_the_save_as_answer
 ```
 
-The targeted engine commands passed locally and in CI. The UI commands passed in CI. The desktop editor compiled in CI; the run command remains unverified. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
+The targeted engine commands passed locally and in CI. The UI commands passed in CI. The desktop editor compiled in CI and completed the bounded Windows runtime check described above. The lockfile includes the local legacy dependency and resolves offline on the authorized machine.
 
 To build and test the older lightweight editor independently:
 
@@ -61,7 +61,7 @@ The older editor has its own `Cargo.lock` and `[workspace]`. Its path dependenci
 
 ## Limits and source terms
 
-The older editor's pagination uses conservative block-height estimates, and its DOCX import is bounded. The newer native foundation has a much broader editing source graph, but this migration branch has no current runtime acceptance evidence. Native pointer, keyboard, screen reader, high contrast, scaling, font fallback, document compatibility, and other-platform behavior remain to be checked. Neither editor is claimed to match Microsoft Word.
+The older editor's pagination uses conservative block-height estimates, and its DOCX import is bounded. The newer native foundation has a much broader editing source graph and one successful synthetic import/save/reopen runtime check. Native pointer, keyboard, screen reader, high contrast, scaling, font fallback, wider document compatibility, and other-platform behavior remain to be checked. Neither editor is claimed to match Microsoft Word.
 
 The original first-party WordStrike code has no selected license; this repository makes no new grant for it. The native WordCraft-derived workspace retains upstream MIT/Apache license texts, copyright notices, and asset attribution under `native/wordstrike`; the older DesignCraft subset retains its licenses and notices under `vendor/designcraft-page`. See [SOURCE_SCOPE.md](SOURCE_SCOPE.md) and [native adaptation notes](native/wordstrike/ADAPTATION.md).
 
