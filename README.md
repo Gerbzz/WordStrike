@@ -15,9 +15,9 @@
 
 WordStrike is a Windows-first workspace for building documents from text blocks and images. Edit a `.wstrike` project, adjust pages, undo changes, and export PDF from the optional native editor.
 
-![WordStrike native editor showing a synthetic field-notes document with structured text, a blue chart, and a page break](assets/screenshots/wordstrike-editor.png)
+![WordStrike draft native editor showing a reopened synthetic document with a ribbon, structured text, and a blue chart](assets/screenshots/wordstrike-native-current.png)
 
-The older lightweight native editor opened a self-authored field-notes project for this capture. The image shows the document structure, editable blocks, page setup, and toolbar; it does not establish an interactive or accessibility review. See [screenshot provenance](docs/SCREENSHOT_PROVENANCE.md).
+*Current development preview from the tested [draft native foundation](https://github.com/Gerbzz/WordStrike/pull/1), not the lightweight editor source on `main`.* The app captured this synthetic document after import, save, and reopen. See [native runtime evidence](docs/NATIVE_RUNTIME_ACCEPTANCE.md); the [earlier editor screenshot](docs/SCREENSHOT_PROVENANCE.md) remains archived.
 
 <p align="center"><a href="#highlights">Highlights</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
 
@@ -29,7 +29,7 @@ The older lightweight native editor opened a self-authored field-notes project f
 
 ## Current status
 
-The main branch is a lightweight native editor source prototype. The standalone package passed 21 locked tests at the earlier checkpoint. The capture-only source change built a Windows native executable offline; no tests were rerun for that change and no installer or release is supplied. A [newer native foundation remains in draft PR #1](https://github.com/Gerbzz/WordStrike/pull/1); its [Windows source checks passed on revision `a4f22da`](https://github.com/Gerbzz/WordStrike/actions/runs/38561143477), but it has no matching runtime screenshot or visual acceptance yet. DOCX support is bounded and native interaction, accessibility, and broad format fidelity remain unverified.
+The `main` branch remains a lightweight native editor source prototype; its standalone package passed 21 locked tests at the earlier checkpoint. The [newer native foundation is in draft PR #1](https://github.com/Gerbzz/WordStrike/pull/1). Its [Windows build and focused tests passed](https://github.com/Gerbzz/WordStrike/actions/runs/38668293554), and the exact debug executable was checked locally with a synthetic import, save, reopen, and native screenshot. See [runtime evidence](docs/NATIVE_RUNTIME_ACCEPTANCE.md) for source revisions and limits. The draft has not been merged; no installer or release is supplied. DOCX support is bounded, while interactive editing, accessibility, and broad format fidelity remain unverified.
 
 ## Files and export
 
