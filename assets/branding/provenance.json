@@ -1,21 +1,70 @@
 {
   "app": "WordStrike",
   "asset": "assets/branding/WordStrike.png",
-  "method": "Lossless rectangular extraction of original pixels with ImageMagick. No scaling, recoloring, tracing, generation, transparency fabrication or animal changes. Original cream outside rounded corners retained. Labels excluded.",
-  "coordinate_system": "Origin top-left; crop bounds [left, top, right, bottom), right/bottom exclusive.",
-  "source_sha256": "0d16865033d8ca3b0528128ae2e2680defe6b8be6a01bf76a4e35e3fe7b75a1d",
-  "crop_bounds": [
-    32,
-    0,
-    688,
-    656
-  ],
+  "method": "Measured rounded alpha mask applied to the original 656x656 logo tile, then translated by whole pixels to center its visible bounds. Original visible RGB and masked visible RGBA were verified unchanged.",
+  "source_tile": {
+    "repository": "Gerbzz/WordStrike",
+    "commit": "f0939d302433d48ecc009e7c0efce0d95992ec9b",
+    "path": "assets/branding/WordStrike.png",
+    "sha256": "ae88373dbdf46c6022d7386ad7ad089a7d57efe8f038484c072e7f14c5c973b3",
+    "git_blob_sha": "7e7fa5e569bdd833a4373e7c29c0837c7fc50d04"
+  },
+  "mask_and_centering": {
+    "inset_pixels": 1.5,
+    "masked_alpha_bbox": [
+      10,
+      24,
+      625,
+      629
+    ],
+    "centered_alpha_bbox": [
+      20,
+      25,
+      635,
+      630
+    ],
+    "integer_translation": [
+      10,
+      1
+    ],
+    "padding_ltrb": [
+      20,
+      25,
+      21,
+      26
+    ],
+    "original_visible_rgb_exact": true,
+    "masked_visible_rgba_exact": true,
+    "transparent_corners": true
+  },
   "dimensions": [
     656,
     656
   ],
-  "sha256": "ae88373dbdf46c6022d7386ad7ad089a7d57efe8f038484c072e7f14c5c973b3",
-  "decoded_rgb_sha256": "3cf4b5b33de71519054e6091b69f0f67fab6c609a28e9e9f361fb819f298d479",
-  "pixel_equality_verified": true,
-  "git_blob_sha": "7e7fa5e569bdd833a4373e7c29c0837c7fc50d04"
+  "mode": "RGBA",
+  "sha256": "d40c05bb4351124fb7f677c615c744eac7979476c8142fc4fd6912f484e541e9",
+  "decoded_rgba_sha256": "88c8abff9fdd06f4b2ff78b018bf1d0373d7e3da283986f2c5d5fdec468ce81a",
+  "git_blob_sha": "2ff7098874703340d854133e050de2fc5e6ddfd9",
+  "tool": "ImageMagick 7.1.2-34 Q16 x64",
+  "original_tile_provenance": {
+    "app": "WordStrike",
+    "asset": "assets/branding/WordStrike.png",
+    "method": "Lossless rectangular extraction of original pixels with ImageMagick. No scaling, recoloring, tracing, generation, transparency fabrication or animal changes. Original cream outside rounded corners retained. Labels excluded.",
+    "coordinate_system": "Origin top-left; crop bounds [left, top, right, bottom), right/bottom exclusive.",
+    "source_sha256": "0d16865033d8ca3b0528128ae2e2680defe6b8be6a01bf76a4e35e3fe7b75a1d",
+    "crop_bounds": [
+      32,
+      0,
+      688,
+      656
+    ],
+    "dimensions": [
+      656,
+      656
+    ],
+    "sha256": "ae88373dbdf46c6022d7386ad7ad089a7d57efe8f038484c072e7f14c5c973b3",
+    "decoded_rgb_sha256": "3cf4b5b33de71519054e6091b69f0f67fab6c609a28e9e9f361fb819f298d479",
+    "pixel_equality_verified": true,
+    "git_blob_sha": "7e7fa5e569bdd833a4373e7c29c0837c7fc50d04"
+  }
 }

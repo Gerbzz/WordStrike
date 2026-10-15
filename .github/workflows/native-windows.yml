@@ -6,6 +6,10 @@ on:
     paths:
       - .github/workflows/native-windows.yml
       - native/wordstrike/**
+      - README.md
+      - assets/branding/**
+      - assets/screenshots/**
+      - docs/NATIVE_RUNTIME_ACCEPTANCE.md
 
 permissions:
   contents: read
@@ -46,33 +50,3 @@ jobs:
 
       - name: Test Save Changes UI guard
         run: cargo test --locked -p wordcraft-ui-egui --lib save_changes_waits_for_the_save_as_answer
-
-      - name: Record native executable identity
-        if: github.event.pull_request.number == 1 && github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          WORDSTRIKE_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          $path = 'target/debug/wordstrike.exe'
-          $file = Get-Item -LiteralPath $path -ErrorAction Stop
-          if ($file.Length -gt 96MB) { throw 'WordStrike executable exceeds 96 MiB artifact cap' }
-          $manifest = [ordered]@{
-            repository = $env:GITHUB_REPOSITORY
-            buildCommit = $env:GITHUB_SHA
-            sourceCommit = $env:WORDSTRIKE_HEAD_SHA
-            executable = 'wordstrike.exe'
-            sizeBytes = $file.Length
-            sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
-            profile = 'dev; debug=0; incremental=0'
-          }
-          $manifest | ConvertTo-Json | Set-Content -LiteralPath 'target/debug/wordstrike-manifest.json' -Encoding utf8
-
-      - name: Retain executable for native acceptance
-        if: github.event.pull_request.number == 1 && github.event.pull_request.head.repo.full_name == github.repository
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: wordstrike-win64-${{ github.event.pull_request.head.sha }}
-          path: |
-            native/wordstrike/target/debug/wordstrike.exe
-            native/wordstrike/target/debug/wordstrike-manifest.json
-          if-no-files-found: error
-          retention-days: 1
