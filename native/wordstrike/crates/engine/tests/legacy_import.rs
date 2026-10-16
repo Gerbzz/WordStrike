@@ -167,7 +167,7 @@ fn assert_mixed_lists(doc: &wordcraft_doc::Document) {
             .map(|p| p.text.as_str())
             .collect::<Vec<_>>(),
         [
-            "Before", "One bold", "Two", "Between", "Again", "Red", "Blue", "After"
+            "Before", "One bold", "Two", "Between", "Again", "Red", "Blue\tCaf\u{E9} \u{1F31F}", "After"
         ]
     );
     for index in [0, 3, 7] {
@@ -251,7 +251,7 @@ fn mixed_legacy_lists_preserve_order_styles_and_paragraphs_through_docx() {
     });
     old.blocks.push(Block::ListItem {
         ordered: false,
-        runs: vec![run("Blue", false, false)],
+        runs: vec![run("Blue\tCaf\u{E9} \u{1F31F}", false, false)],
     });
     old.blocks.push(Block::plain("After"));
     let mut editor = Editor::from_document(old).unwrap();
@@ -277,8 +277,11 @@ fn mixed_legacy_lists_preserve_order_styles_and_paragraphs_through_docx() {
 fn unsupported_list_structure_and_malformed_source_keep_current_document() {
     let mut session = Session::new(wordcraft_doc::Document::from_text("Keep this"));
     let original_id = session.document_id();
-    for (name, runs) in [
-        ("empty-list", vec![]),
+    let active_path = scratch("active-document").with_extension("docx");
+    session.path = Some(active_path.clone());
+    session.dirty = true;
+    for (name, runs, reason) in [
+        ("empty-list", vec![], "empty list item"),
         (
             "object-marker",
             vec![TextRun {
@@ -286,6 +289,7 @@ fn unsupported_list_structure_and_malformed_source_keep_current_document() {
                 bold: false,
                 italic: false,
             }],
+            "unsupported object or break",
         ),
         (
             "embedded-break",
@@ -294,10 +298,22 @@ fn unsupported_list_structure_and_malformed_source_keep_current_document() {
                 bold: false,
                 italic: false,
             }],
+            "unsupported object or break",
+        ),
+        (
+            "control-0001",
+            vec![TextRun { text: "bad\u{0001}item".into(), bold: false, italic: false }],
+            "XML-invalid character U+0001",
+        ),
+        (
+            "control-000b",
+            vec![TextRun { text: "bad\u{000B}item".into(), bold: false, italic: false }],
+            "XML-invalid character U+000B",
         ),
     ] {
         let source = scratch(name).with_extension("wstrike");
         let mut old = LegacyDocument::default();
+        old.blocks.push(Block::plain("Already converted before invalid item"));
         old.blocks.push(Block::ListItem {
             ordered: true,
             runs,
@@ -308,9 +324,12 @@ fn unsupported_list_structure_and_malformed_source_keep_current_document() {
         let error = session
             .run("file.importLegacy", &json!({"path": source}))
             .unwrap_err();
-        assert!(error.to_string().contains("block 0:"), "{error}");
+        assert!(error.to_string().contains("block 1:"), "{error}");
+        assert!(error.to_string().contains(reason), "{error}");
         assert_eq!(session.document_id(), original_id);
         assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this");
+        assert_eq!(session.path.as_ref(), Some(&active_path));
+        assert!(session.dirty);
         assert_eq!(std::fs::read(&source).unwrap(), original);
         let _ = std::fs::remove_file(source);
     }
@@ -323,5 +342,7 @@ fn unsupported_list_structure_and_malformed_source_keep_current_document() {
     assert!(!error.to_string().is_empty());
     assert_eq!(session.document_id(), original_id);
     assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this");
+    assert_eq!(session.path.as_ref(), Some(&active_path));
+    assert!(session.dirty);
     let _ = std::fs::remove_file(malformed);
 }

@@ -3,7 +3,7 @@
 use std::path::Path;
 
 use wordcraft_doc::numbering::ListKind;
-use wordcraft_doc::para::{COLUMN_BREAK, Float, OBJ, PAGE_BREAK, Run};
+use wordcraft_doc::para::{Float, OBJ, PAGE_BREAK, Run};
 use wordcraft_doc::props::NumRef;
 use wordcraft_doc::{CharProps, Document, InlineObject, Paragraph, para_block};
 
@@ -60,10 +60,15 @@ pub fn convert_path(path: &Path) -> Result<Document, String> {
                 }
                 let mut paragraph = Paragraph::new();
                 for run in runs {
+                    if let Some(c) = run.text.chars().find(|c| {
+                        !matches!(*c, '\t' | '\n' | '\r' | '\u{20}'..='\u{D7FF}' | '\u{E000}'..='\u{FFFD}' | '\u{10000}'..='\u{10FFFF}')
+                    }) {
+                        return Err(format!("block {index}: list item contains XML-invalid character U+{:04X}", c as u32));
+                    }
                     if run
                         .text
                         .chars()
-                        .any(|c| matches!(c, OBJ | PAGE_BREAK | COLUMN_BREAK | '\n' | '\r'))
+                        .any(|c| matches!(c, OBJ | '\n' | '\r'))
                     {
                         return Err(format!(
                             "block {index}: list item contains an unsupported object or break"
