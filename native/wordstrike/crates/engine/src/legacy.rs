@@ -2,7 +2,9 @@
 
 use std::path::Path;
 
-use wordcraft_doc::para::{Float, OBJ, PAGE_BREAK, Run};
+use wordcraft_doc::numbering::ListKind;
+use wordcraft_doc::para::{COLUMN_BREAK, Float, OBJ, PAGE_BREAK, Run};
+use wordcraft_doc::props::NumRef;
 use wordcraft_doc::{CharProps, Document, InlineObject, Paragraph, para_block};
 
 pub fn convert_path(path: &Path) -> Result<Document, String> {
@@ -20,7 +22,12 @@ pub fn convert_path(path: &Path) -> Result<Document, String> {
     doc.last_section.margin_top = margin;
     doc.last_section.margin_bottom = margin;
     doc.body.clear();
+    // The old format has no list id: only adjacent items of the same kind belong to one list.
+    let mut current_list: Option<(bool, u32)> = None;
     for (index, block) in source.blocks.iter().enumerate() {
+        if !matches!(block, legacy_wordstrike::Block::ListItem { .. }) {
+            current_list = None;
+        }
         let paragraph = match block {
             legacy_wordstrike::Block::Title { text } if !text.contains(OBJ) => Paragraph::with_text(text, CharProps::default()).styled("Title"),
             legacy_wordstrike::Block::Heading { level, text } if (1..=2).contains(level) => {
@@ -47,8 +54,48 @@ pub fn convert_path(path: &Path) -> Result<Document, String> {
                 }
                 paragraph
             }
-            legacy_wordstrike::Block::ListItem { .. } => {
-                return Err(format!("block {index}: list numbering needs a reviewed conversion"));
+            legacy_wordstrike::Block::ListItem { ordered, runs } => {
+                if runs.is_empty() || runs.iter().all(|run| run.text.is_empty()) {
+                    return Err(format!("block {index}: empty list item is unsupported"));
+                }
+                let mut paragraph = Paragraph::new();
+                for run in runs {
+                    if run
+                        .text
+                        .chars()
+                        .any(|c| matches!(c, OBJ | PAGE_BREAK | COLUMN_BREAK | '\n' | '\r'))
+                    {
+                        return Err(format!(
+                            "block {index}: list item contains an unsupported object or break"
+                        ));
+                    }
+                    let props = CharProps {
+                        bold: Some(run.bold),
+                        italic: Some(run.italic),
+                        ..CharProps::default()
+                    };
+                    paragraph.runs.push(Run {
+                        len: run.text.len(),
+                        props,
+                    });
+                    paragraph.text.push_str(&run.text);
+                }
+                let num = match current_list {
+                    Some((was_ordered, num)) if was_ordered == *ordered => num,
+                    _ => {
+                        let kind = if *ordered {
+                            ListKind::Numbered
+                        } else {
+                            ListKind::Bullet
+                        };
+                        let num = doc.numbering.add_list(kind);
+                        current_list = Some((*ordered, num));
+                        num
+                    }
+                };
+                paragraph.props.numbering = Some(NumRef { num, level: 0 });
+                paragraph.props.style = Some("ListParagraph".into());
+                paragraph
             }
             legacy_wordstrike::Block::PageBreak => Paragraph::with_text(&PAGE_BREAK.to_string(), CharProps::default()),
             legacy_wordstrike::Block::Image { hash, alt } => {
