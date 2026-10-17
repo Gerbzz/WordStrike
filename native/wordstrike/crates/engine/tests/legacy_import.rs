@@ -1,6 +1,8 @@
 use legacy_wordstrike::{Block, Document as LegacyDocument, Editor, PageSetup, TextRun, save_document};
 use serde_json::json;
 use sha2::{Digest, Sha256};
+use wordcraft_doc::numbering::Counters;
+use wordcraft_doc::section::NumFormat;
 use wordcraft_doc::{Block as NativeBlock, StoryRef};
 use wordcraft_engine::{Session, file_access, io};
 
@@ -149,23 +151,198 @@ fn legacy_import_rejects_unsupported_and_truncated_image_payloads() {
     }
 }
 
+fn assert_mixed_lists(doc: &wordcraft_doc::Document) {
+    let paragraphs: Vec<_> = doc
+        .body
+        .iter()
+        .map(|block| match &**block {
+            NativeBlock::Para(p) => p,
+            _ => panic!("expected a paragraph"),
+        })
+        .collect();
+    assert_eq!(paragraphs.len(), 8);
+    assert_eq!(
+        paragraphs
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect::<Vec<_>>(),
+        [
+            "Before", "One bold", "Two", "Between", "Again", "Red", "Blue\tCaf\u{E9} \u{1F31F}", "After"
+        ]
+    );
+    for index in [0, 3, 7] {
+        assert!(
+            paragraphs[index].props.numbering.is_none(),
+            "paragraph {index} became a list item"
+        );
+    }
+    let num = |index: usize| {
+        paragraphs[index]
+            .props
+            .numbering
+            .expect("list item has numbering")
+            .num
+    };
+    assert_eq!(
+        num(1),
+        num(2),
+        "adjacent ordered items must share a counter"
+    );
+    assert_ne!(num(2), num(4), "a paragraph must restart an ordered list");
+    assert_eq!(num(5), num(6), "adjacent bullets must share a list");
+    assert_ne!(num(4), num(5), "changing list kind must start a new list");
+    for index in [1, 2, 4, 5, 6] {
+        assert_eq!(paragraphs[index].props.numbering.unwrap().level, 0);
+    }
+    assert_eq!(
+        doc.numbering.level(num(1), 0).unwrap().format,
+        NumFormat::Decimal
+    );
+    assert_eq!(
+        doc.numbering.level(num(5), 0).unwrap().format,
+        NumFormat::Bullet
+    );
+    let mut counters = Counters::default();
+    for (index, expected) in [(1, "1."), (2, "2."), (4, "1.")] {
+        assert_eq!(
+            counters
+                .next_label(&doc.numbering, num(index), 0)
+                .unwrap()
+                .0,
+            expected
+        );
+    }
+    assert_eq!(paragraphs[1].runs.len(), 2);
+    assert_eq!(paragraphs[1].runs[0].len, 4);
+    assert_ne!(paragraphs[1].runs[0].props.bold, Some(true));
+    assert_eq!(paragraphs[1].runs[1].len, 4);
+    assert_eq!(paragraphs[1].runs[1].props.bold, Some(true));
+    assert_eq!(paragraphs[2].runs[0].props.italic, Some(true));
+    assert_eq!(paragraphs[5].runs[0].props.bold, Some(true));
+}
+
 #[test]
-fn unsupported_list_and_malformed_source_keep_current_document() {
-    let source = scratch("list").with_extension("wstrike");
+fn mixed_legacy_lists_preserve_order_styles_and_paragraphs_through_docx() {
+    let source = scratch("mixed-lists").with_extension("wstrike");
+    let target = scratch("mixed-lists-native").with_extension("docx");
     let mut old = LegacyDocument::default();
-    old.blocks.push(Block::ListItem { ordered: true, runs: vec![TextRun { text: "One".into(), bold: false, italic: false }] });
+    let run = |text: &str, bold, italic| TextRun {
+        text: text.into(),
+        bold,
+        italic,
+    };
+    old.blocks.push(Block::plain("Before"));
+    old.blocks.push(Block::ListItem {
+        ordered: true,
+        runs: vec![run("One ", false, false), run("bold", true, false)],
+    });
+    old.blocks.push(Block::ListItem {
+        ordered: true,
+        runs: vec![run("Two", false, true)],
+    });
+    old.blocks.push(Block::plain("Between"));
+    old.blocks.push(Block::ListItem {
+        ordered: true,
+        runs: vec![run("Again", false, false)],
+    });
+    old.blocks.push(Block::ListItem {
+        ordered: false,
+        runs: vec![run("Red", true, false)],
+    });
+    old.blocks.push(Block::ListItem {
+        ordered: false,
+        runs: vec![run("Blue\tCaf\u{E9} \u{1F31F}", false, false)],
+    });
+    old.blocks.push(Block::plain("After"));
     let mut editor = Editor::from_document(old).unwrap();
     save_document(&mut editor, &source).unwrap();
     let original = std::fs::read(&source).unwrap();
     let mut session = Session::new(wordcraft_doc::Document::from_text("Keep this"));
-    assert!(session.run("file.importLegacy", &json!({"path": source})).is_err());
-    assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this");
+    session
+        .run("file.importLegacy", &json!({"path": source}))
+        .unwrap();
+    assert_mixed_lists(&session.doc);
+    assert!(session.path.is_none());
+    assert!(session.dirty);
+    session
+        .run("file.saveAs", &json!({"path": target}))
+        .unwrap();
+    assert_mixed_lists(&io::open_path(&target).unwrap());
     assert_eq!(std::fs::read(&source).unwrap(), original);
+    let _ = std::fs::remove_file(source);
+    let _ = std::fs::remove_file(target);
+}
+
+#[test]
+fn unsupported_list_structure_and_malformed_source_keep_current_document() {
+    let mut session = Session::new(wordcraft_doc::Document::from_text("Keep this"));
+    let original_id = session.document_id();
+    let active_path = scratch("active-document").with_extension("docx");
+    session.path = Some(active_path.clone());
+    session.dirty = true;
+    for (name, runs, reason) in [
+        ("empty-list", vec![], "empty list item"),
+        (
+            "object-marker",
+            vec![TextRun {
+                text: "bad \u{FFFC}".into(),
+                bold: false,
+                italic: false,
+            }],
+            "unsupported object or break",
+        ),
+        (
+            "embedded-break",
+            vec![TextRun {
+                text: "bad\nitem".into(),
+                bold: false,
+                italic: false,
+            }],
+            "unsupported object or break",
+        ),
+        (
+            "control-0001",
+            vec![TextRun { text: "bad\u{0001}item".into(), bold: false, italic: false }],
+            "XML-invalid character U+0001",
+        ),
+        (
+            "control-000b",
+            vec![TextRun { text: "bad\u{000B}item".into(), bold: false, italic: false }],
+            "XML-invalid character U+000B",
+        ),
+    ] {
+        let source = scratch(name).with_extension("wstrike");
+        let mut old = LegacyDocument::default();
+        old.blocks.push(Block::plain("Already converted before invalid item"));
+        old.blocks.push(Block::ListItem {
+            ordered: true,
+            runs,
+        });
+        let mut editor = Editor::from_document(old).unwrap();
+        save_document(&mut editor, &source).unwrap();
+        let original = std::fs::read(&source).unwrap();
+        let error = session
+            .run("file.importLegacy", &json!({"path": source}))
+            .unwrap_err();
+        assert!(error.to_string().contains("block 1:"), "{error}");
+        assert!(error.to_string().contains(reason), "{error}");
+        assert_eq!(session.document_id(), original_id);
+        assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this");
+        assert_eq!(session.path.as_ref(), Some(&active_path));
+        assert!(session.dirty);
+        assert_eq!(std::fs::read(&source).unwrap(), original);
+        let _ = std::fs::remove_file(source);
+    }
 
     let malformed = scratch("malformed").with_extension("wstrike");
     std::fs::write(&malformed, b"not a document").unwrap();
-    assert!(session.run("file.importLegacy", &json!({"path": malformed})).is_err());
+    let error = session
+        .run("file.importLegacy", &json!({"path": malformed}))
+        .unwrap_err();
+    assert!(!error.to_string().is_empty());
+    assert_eq!(session.document_id(), original_id);
     assert_eq!(session.doc.plain_text(StoryRef::Body), "Keep this");
-    let _ = std::fs::remove_file(source);
+    assert_eq!(session.path.as_ref(), Some(&active_path));
+    assert!(session.dirty);
     let _ = std::fs::remove_file(malformed);
 }
