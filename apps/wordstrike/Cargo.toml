@@ -12,6 +12,7 @@ quick-xml = "0.41.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.11"
+tempfile = "=3.27.0"
 uuid = { version = "=1.26.1", features = ["serde", "v4"] }
 zip = { version = "9.0.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 designcraft-doc = { path = "../../vendor/designcraft-page/crates/doc", optional = true }
@@ -32,3 +33,9 @@ required-features = ["native-ui"]
 
 [dev-dependencies]
 hayro-syntax = "0.7.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Storage_FileSystem"] }
+
+[target.'cfg(any(target_os = "linux", target_os = "android", target_vendor = "apple", target_os = "redox"))'.dependencies]
+rustix = { version = "=1.1.5", features = ["fs"] }

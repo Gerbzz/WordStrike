@@ -14,6 +14,10 @@ use zip::{CompressionMethod, ZipArchive, ZipWriter};
 use crate::model::{State, validate, validate_parts};
 use crate::{Document, Editor};
 
+mod persistence;
+#[cfg(test)]
+mod tests;
+
 const MAX_ARCHIVE: u64 = 64 * 1024 * 1024;
 const MAX_JSON: usize = 20 * 1024 * 1024;
 const MAX_ASSET: usize = 10 * 1024 * 1024;
@@ -173,6 +177,13 @@ pub(crate) fn pending_pre_move_document(path: &Path) -> Result<Option<PathBuf>, 
 }
 
 pub(crate) fn resume_pre_move_document(path: &Path) -> Result<PathBuf, String> {
+    resume_pre_move_with(path, publish_archive)
+}
+
+fn resume_pre_move_with(
+    path: &Path,
+    publish: impl FnOnce(&Path, &Path, [u8; 32]) -> Result<(), String>,
+) -> Result<PathBuf, String> {
     let staged =
         pending_pre_move_document(path)?.ok_or("no interrupted document save can be resumed")?;
     open_document(&staged)
@@ -182,7 +193,7 @@ pub(crate) fn resume_pre_move_document(path: &Path) -> Result<PathBuf, String> {
         .original_digest
         .ok_or("recovery record has no original digest")?;
     let backup = recovery_sibling(path, &record.backup);
-    fs::rename(path, &backup).map_err(|e| {
+    persistence::move_noclobber(path, &backup).map_err(|e| {
         format!(
             "could not preserve original document at {}: {e}",
             backup.display()
@@ -191,21 +202,17 @@ pub(crate) fn resume_pre_move_document(path: &Path) -> Result<PathBuf, String> {
     if file_digest(&backup).ok() != Some(original)
         || file_digest(&staged).ok() != Some(record.published_digest)
     {
-        if !path_present(path) {
-            let _ = fs::hard_link(&backup, path);
-        }
+        let rollback = rollback_document(path, &backup);
         return Err(format!(
-            "document changed during recovery; original at {}, staged copy at {}",
+            "document changed during recovery; original at {}, staged copy at {}; {rollback}",
             backup.display(),
             staged.display()
         ));
     }
-    if let Err(error) = fs::hard_link(&staged, path) {
-        if !path_present(path) {
-            let _ = fs::hard_link(&backup, path);
-        }
+    if let Err(error) = publish(&staged, path, record.published_digest) {
+        let rollback = rollback_document(path, &backup);
         return Err(format!(
-            "could not publish staged document: {error}; original at {}, staged copy at {}",
+            "could not publish staged document: {error}; original at {}, staged copy at {}; {rollback}",
             backup.display(),
             staged.display()
         ));
@@ -372,7 +379,43 @@ fn available_backup(path: &Path) -> PathBuf {
     }
 }
 
+fn publish_archive(source: &Path, path: &Path, expected: [u8; 32]) -> Result<(), String> {
+    persistence::publish(source, path, |prepared| {
+        if file_digest(prepared).map_err(std::io::Error::other)? != expected {
+            return Err(std::io::Error::other(
+                "archive changed while preparing publication",
+            ));
+        }
+        Ok(())
+    })
+    .map_err(|error| error.to_string())
+}
+
+fn rollback_document(path: &Path, backup: &Path) -> String {
+    if path_present(path) {
+        return format!(
+            "main path is occupied at {}; backup retained for review",
+            path.display()
+        );
+    }
+    match file_digest(backup).and_then(|digest| publish_archive(backup, path, digest)) {
+        Ok(()) => format!("original restored at {}", path.display()),
+        Err(error) => format!(
+            "could not restore original at {}: {error}; backup retained for recovery",
+            path.display()
+        ),
+    }
+}
+
 pub fn save_document(editor: &mut Editor, path: &Path) -> Result<(), String> {
+    save_document_with(editor, path, publish_archive)
+}
+
+fn save_document_with(
+    editor: &mut Editor,
+    path: &Path,
+    publish: impl FnOnce(&Path, &Path, [u8; 32]) -> Result<(), String>,
+) -> Result<(), String> {
     validate(&editor.document)?;
     if editor.history.is_empty()
         || editor.history.len() > 100
@@ -479,7 +522,7 @@ pub fn save_document(editor: &mut Editor, path: &Path) -> Result<(), String> {
     let backup = if let Some(digest) = expected {
         let backup = available_backup(path);
         write_recovery(path, &backup, &temp, digest, staged_digest)?;
-        fs::rename(path, &backup).map_err(|e| {
+        persistence::move_noclobber(path, &backup).map_err(|e| {
             let _ = fs::remove_file(recovery_path(path));
             format!(
                 "could not preserve current document; staged copy at {}: {e}",
@@ -487,11 +530,9 @@ pub fn save_document(editor: &mut Editor, path: &Path) -> Result<(), String> {
             )
         })?;
         if file_digest(&backup).ok() != Some(digest) {
-            if !path_present(path) {
-                let _ = fs::hard_link(&backup, path);
-            }
+            let rollback = rollback_document(path, &backup);
             return Err(format!(
-                "document changed during save; external original retained at {}, staged copy at {}",
+                "document changed during save; external original retained at {}, staged copy at {}; {rollback}",
                 backup.display(),
                 temp.display()
             ));
@@ -500,22 +541,21 @@ pub fn save_document(editor: &mut Editor, path: &Path) -> Result<(), String> {
     } else {
         None
     };
-    if let Err(error) = fs::hard_link(&temp, path) {
-        if let Some(backup) = &backup {
-            if !path_present(path) {
-                let _ = fs::hard_link(backup, path);
-            }
-        }
+    if let Err(error) = publish(&temp, path, staged_digest) {
+        let rollback = backup
+            .as_ref()
+            .map(|backup| rollback_document(path, backup));
         if expected.is_some() && file_digest(path).ok() == expected {
             let _ = fs::remove_file(recovery_path(path));
         }
         return Err(format!(
-            "could not publish document without replacing another file: {error}; staged copy at {}{}",
+            "could not publish document without replacing another file: {error}; staged copy at {}{}{}",
             temp.display(),
             backup
                 .as_ref()
                 .map(|p| format!(", previous file at {}", p.display()))
-                .unwrap_or_default()
+                .unwrap_or_default(),
+            rollback.map(|note| format!("; {note}")).unwrap_or_default()
         ));
     }
     let _ = fs::remove_file(&temp);

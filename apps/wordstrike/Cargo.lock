@@ -4370,10 +4370,13 @@ dependencies = [
  "hayro-syntax",
  "image",
  "quick-xml",
+ "rustix 1.1.5",
  "serde",
  "serde_json",
  "sha2",
+ "tempfile",
  "uuid",
+ "windows-sys 0.61.2",
  "zip",
 ]
 

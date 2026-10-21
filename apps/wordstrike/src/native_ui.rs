@@ -949,7 +949,14 @@ mod tests {
         first.save();
         let (backup, staged) = pending_save(&path);
         fs::rename(&path, &backup).unwrap();
-        fs::hard_link(&staged, &path).unwrap();
+        let mut published = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)
+            .unwrap();
+        std::io::Write::write_all(&mut published, &fs::read(&staged).unwrap()).unwrap();
+        published.sync_all().unwrap();
+        drop(published);
 
         let mut restarted = NativeEditor::open_or_create(path.clone()).unwrap();
         assert_eq!(
