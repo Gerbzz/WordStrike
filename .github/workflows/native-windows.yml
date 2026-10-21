@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - .github/workflows/native-windows.yml
+      - apps/wordstrike/**
+      - vendor/designcraft-page/**
+      - fixtures/wordstrike/**
       - native/wordstrike/**
       - README.md
       - assets/branding/**
@@ -28,6 +31,7 @@ jobs:
       CARGO_INCREMENTAL: '0'
       CARGO_PROFILE_DEV_DEBUG: '0'
       CARGO_PROFILE_TEST_DEBUG: '0'
+      CARGO_TARGET_DIR: '${{ github.workspace }}/native/wordstrike/target'
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,6 +42,15 @@ jobs:
         run: |
           rustc --version
           cargo --version
+
+      - name: Select compatible Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: '1.96.1'
+
+      - name: Test complete legacy app and recovery workflows
+        working-directory: apps/wordstrike
+        run: cargo test --locked --all-features -j 1
 
       - name: Build WordStrike desktop editor
         run: cargo build --locked -p wordcraft --bin wordstrike
@@ -50,3 +63,31 @@ jobs:
 
       - name: Test Save Changes UI guard
         run: cargo test --locked -p wordcraft-ui-egui --lib save_changes_waits_for_the_save_as_answer
+
+  legacy-persistence:
+    if: github.repository == 'Gerbzz/WordStrike'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: '1'
+      CARGO_INCREMENTAL: '0'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Select compatible Rust
+        uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          toolchain: '1.96.1'
+
+      - name: Test archive persistence and editable saves
+        working-directory: apps/wordstrike
+        run: cargo test --locked --lib --test edit -j 1

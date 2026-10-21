@@ -5420,10 +5420,13 @@ version = "0.1.0"
 dependencies = [
  "image",
  "quick-xml",
+ "rustix 1.1.5",
  "serde",
  "serde_json",
  "sha2",
+ "tempfile",
  "uuid",
+ "windows-sys 0.61.2",
  "zip 9.0.3",
 ]
 
