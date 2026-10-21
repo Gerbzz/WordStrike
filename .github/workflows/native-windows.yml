@@ -9,10 +9,8 @@ on:
       - vendor/designcraft-page/**
       - fixtures/wordstrike/**
       - native/wordstrike/**
-      - README.md
+      - tests/**
       - assets/branding/**
-      - assets/screenshots/**
-      - docs/NATIVE_RUNTIME_ACCEPTANCE.md
 
 permissions:
   contents: read
@@ -55,6 +53,23 @@ jobs:
 
       - name: Build WordStrike desktop editor
         run: cargo build --locked -p wordcraft --bin wordstrike
+
+      - name: Capture the real native window and title-bar branding
+        working-directory: .
+        env:
+          WORDSTRIKE_CAPTURE_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: ./tests/capture-native-branding.ps1 -Executable ./native/wordstrike/target/debug/wordstrike.exe -OutputDirectory "${{ runner.temp }}/wordstrike-native-branding"
+
+      - name: Save scoped native capture evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wordstrike-native-branding-${{ github.event.pull_request.head.sha }}
+          path: |
+            ${{ runner.temp }}/wordstrike-native-branding/*.png
+            ${{ runner.temp }}/wordstrike-native-branding/proof.json
+          if-no-files-found: warn
+          retention-days: 1
 
       - name: Test legacy import and safe save
         run: cargo test --locked -p wordcraft-engine --test legacy_import --test safe_save
