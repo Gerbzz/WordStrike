@@ -7,12 +7,14 @@
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    println!("cargo:rerun-if-changed=../../assets/app-icon/wordstrike.png");
+    println!("cargo:rerun-if-changed=../../assets/app-icon/wordstrike-geometric-256.png");
+    println!("cargo:rerun-if-changed=../../assets/app-icon/wordstrike-geometric.ico");
     println!("cargo:rerun-if-env-changed=WORDCRAFT_REQUIRE_WINRES");
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
         return;
     }
     let mut res = winresource::WindowsResource::new();
+    res.set_icon("../../assets/app-icon/wordstrike-geometric.ico");
     res.set("ProductName", "WordStrike")
         .set("FileDescription", "WordStrike word processor")
         .set("CompanyName", "PWDS")

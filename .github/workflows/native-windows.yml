@@ -32,6 +32,7 @@ jobs:
       CARGO_PROFILE_DEV_DEBUG: '0'
       CARGO_PROFILE_TEST_DEBUG: '0'
       CARGO_TARGET_DIR: '${{ github.workspace }}/native/wordstrike/target'
+      WORDCRAFT_REQUIRE_WINRES: '1'
     steps:
       - name: Check out source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
