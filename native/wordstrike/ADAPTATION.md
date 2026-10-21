@@ -12,11 +12,12 @@ The source snapshot can be checked against the pinned upstream commit; the
 adaptation edits are in this repository's history.
 
 The desktop binary is named `wordstrike`; its window title, product metadata,
-visible UI names, website link, and embedded egui icon use the original
-WordStrike crane. Internal crate/package names stay `wordcraft-*` so the
-upstream dependency graph remains coherent. Windows executable icon packaging
-is pending an approved `.ico` version of the crane. The window/taskbar icon
-uses the original PNG now. OS default-app integration is disabled until
+visible UI names, and website link use the WordStrike identity. Its embedded
+egui and web icons reference the geometric page mark, and Windows resources
+reference the matching ICO. Historical crane artwork and provenance remain
+unchanged. Internal crate/package names stay `wordcraft-*` so the upstream
+dependency graph remains coherent. Native resource packaging and runtime icon
+display remain unverified for the new assets. OS default-app integration is disabled until
 WordStrike installers and desktop entries exist; the donor's packaging is not
 silently reused.
 

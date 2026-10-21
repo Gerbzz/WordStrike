@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/branding/WordStrike.png" alt="Original WordStrike logo" width="160" height="160">
+  <img src="assets/branding/WordStrike-geometric.svg" alt="WordStrike: a bound page with a structured text measure" width="160" height="160">
 </p>
 
 <h1 align="center">WordStrike</h1>
@@ -24,7 +24,7 @@ This is the **current native foundation**, captured after importing a self-autho
 ## Foundation
 
 - `native/wordstrike` contains the complete source graph of the WordCraft document, layout, DOCX, PDF, proofing, command, and egui desktop crates, pinned to upstream commit [`04f6f53`](https://github.com/storytold/wordcraft/commit/04f6f53b8a4d8140c7bb62f949b0a6099a473da1).
-- The desktop target is named `wordstrike`, uses the original crane artwork and WordStrike identity, and exposes the donor's ribbon, page canvas, formatting, review, and document commands. Internal Rust crate names remain unchanged for dependency compatibility.
+- The desktop target is named `wordstrike`, uses the WordStrike geometric page mark, and exposes the donor's ribbon, page canvas, formatting, review, and document commands. Internal Rust crate names remain unchanged for dependency compatibility. Historical crane artwork remains preserved in the repository.
 - File > Open offers an import picker for the original `.wstrike` archive. `file.importLegacy` converts it into a new unsaved native document, prompting before replacing unsaved work. It maps titles, level 1-2 headings, styled paragraph runs, page setup, page breaks, and bounded, fully decoded PNG/JPEG images with alt text. It refuses lists, invalid image references, unbound object markers, and unsupported heading levels rather than silently dropping them.
 - `apps/wordstrike` remains the original lightweight editor. It keeps its own archive format and can still be built independently.
 
@@ -67,4 +67,4 @@ The original first-party WordStrike code has no selected license; this repositor
 
 ## PWDS brand artwork
 
-The company mark in this masthead is the existing [official PWDS logo](https://github.com/Gerbzz/PWDS-Website/blob/main/public/prowebdevsolutions-logo.png), with the [official orange display asset](https://prowebdevsolutions.com/images/prowebdevsolutions-logo-orange.svg) for dark backgrounds. The app logo above it remains the original Strike suite artwork.
+The company mark in this masthead is the existing [official PWDS logo](https://github.com/Gerbzz/PWDS-Website/blob/main/public/prowebdevsolutions-logo.png), with the [official orange display asset](https://prowebdevsolutions.com/images/prowebdevsolutions-logo-orange.svg) for dark backgrounds. The app logo above it is the [original WordStrike geometric page mark](assets/branding/GEOMETRIC-IDENTITY.md); historical Strike artwork and its provenance remain at their original paths.
