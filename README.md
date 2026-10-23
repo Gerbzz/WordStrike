@@ -15,9 +15,9 @@
 
 WordStrike is a Windows-first document editor for structured text, images, and page layout. This repository preserves the original editable `.wstrike` prototype and adds a native foundation for rich text, DOCX, PDF, proofing, and a ribbon-style desktop interface, with an explicit import path between them.
 
-![WordStrike native editor showing a reopened synthetic document with a ribbon, structured text, and a blue chart](assets/screenshots/wordstrike-native-current.png)
+![WordStrike native editor showing the public Quarterly Field Notes sample, ribbon, page and status bar](assets/screenshots/wordstrike-native-geometric-client.png)
 
-This is the **current native foundation**, captured after importing a self-authored `.wstrike` fixture, saving it as DOCX, and reopening the DOCX. See [native runtime evidence](docs/NATIVE_RUNTIME_ACCEPTANCE.md). The [older lightweight editor screenshot](assets/screenshots/wordstrike-editor.png) remains available with its [own provenance](docs/SCREENSHOT_PROVENANCE.md).
+This untouched client frame was captured from the CI-built native app at source `1c471e9b` on 21 October 2026. The [full Windows window shows the geometric title-bar icon](assets/screenshots/wordstrike-native-geometric-window.png); the client frame above excludes Windows chrome. See [capture hashes and limits](docs/NATIVE_RUNTIME_ACCEPTANCE.md). The [earlier import/save/reopen frame](assets/screenshots/wordstrike-native-current.png) and [older lightweight editor screenshot](assets/screenshots/wordstrike-editor.png) remain archived with their evidence.
 
 <p align="center"><a href="#foundation">Foundation</a> · <a href="#build-and-test">Build and test</a> · <a href="assets/branding">Original artwork</a></p>
 
@@ -30,7 +30,7 @@ This is the **current native foundation**, captured after importing a self-autho
 
 ## Current status
 
-**Native foundation at a source-stage checkpoint.** [Windows CI for draft source `03ea913`](https://github.com/Gerbzz/WordStrike/actions/runs/38668293554) built the desktop editor and passed the targeted legacy import, safe-save, import UI, and Save Changes guard tests. A CI-built executable from that run was launched on Windows with an isolated synthetic document: import, DOCX Save As, source preservation, DOCX reopen, and an authentic rendered window capture passed. See [the exact runtime receipt and limits](docs/NATIVE_RUNTIME_ACCEPTANCE.md). No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity still need verification.
+**Native foundation at a source-stage checkpoint.** [CI at source `1c471e9b`](https://github.com/Gerbzz/WordStrike/actions/runs/39669849487) built the desktop editor, passed its existing native tests and all three platform persistence checks, and captured the real Windows window using an isolated copy of the public DOCX sample. Visual review confirmed the geometric caption icon, readable title, ribbon and sample text. The earlier 15 October check separately covered legacy import, DOCX Save As, source preservation and reopen. See [the exact runtime evidence and limits](docs/NATIVE_RUNTIME_ACCEPTANCE.md). No installer or binary release is supplied. Interactive editing, accessibility, and broad file fidelity still need verification.
 
 ## Files and export
 

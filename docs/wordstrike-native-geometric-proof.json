@@ -1,0 +1,36 @@
+{
+  "status": "captured-for-independent-visual-review",
+  "sourceRevision": "18c18699efff09e95f6e2997826f20ab7411ec18",
+  "sourceTree": "f21557652936f7ee89584c7fe5e56946d8239532",
+  "pullRequestHead": "1c471e9b8b15ee2f68123c31ba4a557d8a00fbbf",
+  "runId": "39669849487",
+  "capturedAtUtc": "2026-10-21T20:39:59.3864851Z",
+  "executableSha256": "5147C25BF64DF524757D870EFA62BF81FA1BBD477E02FD6691E1725AC5020294",
+  "publicFixture": "fixtures/wordstrike/with-image.docx",
+  "fixtureSha256": "961965C3053863007A298AAFDC8696A1A99521DF7932F7DAD7F4CF130FBE3D0D",
+  "fixtureAndCopyUnchanged": true,
+  "sourceIcon": "native/wordstrike/assets/app-icon/wordstrike-geometric-256.png",
+  "sourceIconSha256": "2E3290801FAC278CC9C31E3DE06B2AB3F79F7DAC142C86A6F8EE66244E0EBC37",
+  "spawnedProcessId": 2328,
+  "capturedWindowProcessId": 2328,
+  "foregroundVerified": true,
+  "windowsCaptionPresent": true,
+  "nativeSmallIconPresent": true,
+  "title": "WordStrike",
+  "documentPages": 1,
+  "expectedSampleTextPresent": true,
+  "outerWindow": {
+    "sha256": "B9A8D8D1D916071D1F4EA60502A8AF8ABFA420B7863B472B90D0EF2F21535548",
+    "file": "wordstrike-native-window.png",
+    "height": 672,
+    "width": 976
+  },
+  "client": {
+    "sha256": "8B92CA78ECA39DF9CE51C5EEE3BBFE74B1DA5D00EABEFA67354FC149EA4E7B18",
+    "file": "wordstrike-native-client.png",
+    "height": 633,
+    "width": 960
+  },
+  "rasterEdits": false,
+  "limits": "Hosted synthetic-document capture only; logo appearance still requires visual review. Not Room acceptance, taskbar proof, seven-payload PE verification, or a release."
+}
