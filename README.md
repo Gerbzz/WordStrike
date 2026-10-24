@@ -15,6 +15,12 @@
 
 WordStrike is a Windows-first document editor for structured text, images, and page layout. This repository preserves the original editable `.wstrike` prototype and adds a native foundation for rich text, DOCX, PDF, proofing, and a ribbon-style desktop interface, with an explicit import path between them.
 
+## Rust direction and migration status
+
+- **Target:** Adapt and extend the existing Rust WordCraft foundation into WordStrike; this is not a from-scratch rewrite of an already-Rust document engine.
+- **Current implementation:** Published `main` contains the Rust native document/layout/DOCX/PDF/editor graph in [`native/wordstrike`](native/wordstrike/), alongside the original Rust prototype in [`apps/wordstrike`](apps/wordstrike/) and its explicit `.wstrike` import path.
+- **Remaining migration:** Consolidate on the WordCraft-based desktop without losing the legacy reader/importer or existing changes. Broad DOCX fidelity, native interaction, accessibility, and clean-machine release packaging remain open; bounded fixes and captures are not full document-product acceptance.
+
 ![WordStrike native editor showing the public Quarterly Field Notes sample, ribbon, page and status bar](assets/screenshots/wordstrike-native-geometric-client.png)
 
 This untouched client frame was captured from the CI-built native app at source `1c471e9b` on 21 October 2026. The [full Windows window shows the geometric title-bar icon](assets/screenshots/wordstrike-native-geometric-window.png); the client frame above excludes Windows chrome. See [capture hashes and limits](docs/NATIVE_RUNTIME_ACCEPTANCE.md). The [earlier import/save/reopen frame](assets/screenshots/wordstrike-native-current.png) and [older lightweight editor screenshot](assets/screenshots/wordstrike-editor.png) remain archived with their evidence.
