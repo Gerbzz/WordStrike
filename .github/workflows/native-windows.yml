@@ -71,6 +71,9 @@ jobs:
           if-no-files-found: warn
           retention-days: 1
 
+      - name: Test partial table-cell margin updates
+        run: cargo test --locked -p wordcraft-engine --test table_cell_margins
+
       - name: Test legacy import and safe save
         run: cargo test --locked -p wordcraft-engine --test legacy_import --test safe_save
 
