@@ -445,3 +445,88 @@ pub fn save_path_with(path: &std::path::Path, _doc: &Document, _password: Option
 pub fn decode_text(b: &[u8]) -> String {
     wordcraft_formats::txt::decode(b)
 }
+
+/// Does `path` hold a Word 2003 XML Document already (so a plain save keeps that format)?
+#[cfg(not(target_arch = "wasm32"))]
+pub(crate) fn is_word_2003_file(path: &std::path::Path) -> bool {
+    use std::io::Read;
+    if crate::file_access::check_read(&path.to_string_lossy()).is_err() {
+        return false;
+    }
+    let Ok(f) = std::fs::File::open(path) else { return false };
+    let mut head = Vec::new();
+    // The root element and its namespaces come first.
+    if f.take(64 * 1024).read_to_end(&mut head).is_err() {
+        return false;
+    }
+    wordcraft_docx::sniff_xml(&head) == wordcraft_docx::XmlKind::WordMl2003
+}
+
+#[cfg(target_arch = "wasm32")]
+pub(crate) fn is_word_2003_file(_path: &std::path::Path) -> bool {
+    false
+}
+
+#[cfg(test)]
+#[cfg(not(target_arch = "wasm32"))]
+mod word_2003_sniff_tests {
+    use super::is_word_2003_file;
+    use crate::{file_access, io};
+    use wordcraft_doc::Document;
+
+    struct Scratch(std::path::PathBuf);
+    impl Scratch {
+        fn new() -> Self {
+            let unique = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+            let dir = std::env::temp_dir().join(format!("wordstrike-xml-sniff-{}-{unique}", std::process::id()));
+            std::fs::create_dir(&dir).unwrap();
+            Self(dir)
+        }
+    }
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn word_2003_bytes(text: &str) -> Vec<u8> {
+        io::save_bytes_opts("fixture.xml", &Document::from_text(text), &io::ExportOptions { word2003: true, ..Default::default() }).unwrap()
+    }
+
+    #[test]
+    fn word_2003_sniff_accepts_a_document_larger_than_its_prefix_limit() {
+        let dir = Scratch::new();
+        let path = dir.0.join("large.xml");
+        let bytes = word_2003_bytes(&"synthetic paragraph ".repeat(8_000));
+        assert!(bytes.len() > 64 * 1024);
+        std::fs::write(&path, &bytes).unwrap();
+        assert!(is_word_2003_file(&path));
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+    }
+
+    #[test]
+    fn word_2003_sniff_returns_false_without_read_authority() {
+        let dir = Scratch::new();
+        let allowed = dir.0.join("allowed");
+        std::fs::create_dir(&allowed).unwrap();
+        let path = dir.0.join("outside.xml");
+        std::fs::write(&path, word_2003_bytes("synthetic sentinel")).unwrap();
+        assert!(is_word_2003_file(&path));
+        let roots = file_access::AutomationRoots::new(Some(&allowed), None).unwrap().unwrap();
+        file_access::confine(Some(&roots), || assert!(!is_word_2003_file(&path)));
+        let write_only = file_access::AutomationRoots::new(None, Some(&dir.0)).unwrap().unwrap();
+        file_access::confine(Some(&write_only), || assert!(!is_word_2003_file(&path)));
+    }
+
+    #[test]
+    fn word_2003_sniff_returns_false_for_other_formats_and_unreadable_paths() {
+        let dir = Scratch::new();
+        let path = dir.0.join("flat-opc.xml");
+        std::fs::write(&path, io::save_bytes("fixture.xml", &Document::from_text("synthetic sentinel")).unwrap()).unwrap();
+        assert!(!is_word_2003_file(&path));
+        std::fs::write(&path, b"not an XML document").unwrap();
+        assert!(!is_word_2003_file(&path));
+        assert!(!is_word_2003_file(&dir.0.join("missing.xml")));
+        assert!(!is_word_2003_file(&dir.0));
+    }
+}
