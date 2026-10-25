@@ -1055,6 +1055,7 @@ fn escape_line_start(s: String) -> String {
 }
 
 fn code_span(t: &str) -> String {
+    let t = t.replace("\r\n", " ").replace(['\r', '\n'], " ");
     let mut longest = 0;
     let mut cur = 0;
     for c in t.chars() {
@@ -1418,5 +1419,73 @@ mod tests {
         let FBlock::Para(q) = &back.blocks[0] else { panic!() };
         assert_eq!(q.text(), "1. not a list *really*");
         assert!(q.list.is_none());
+    }
+
+    /// Adapted from WordCraft #3804; code-span line endings must not become Markdown blocks.
+    #[test]
+    fn code_span_line_endings_stay_literal_on_export() {
+        let cases = [
+            ("a\n# b", "a # b"),
+            ("a\n<div>b</div>", "a <div>b</div>"),
+            ("a\n- b", "a - b"),
+            ("a\n```", "a ```"),
+            ("a\r# b", "a # b"),
+            ("a\r\n# b", "a # b"),
+            ("a\n\n> b", "a  > b"),
+            ("\na\n", " a "),
+            ("`a\n# b`", "`a # b`"),
+            ("unchanged", "unchanged"),
+        ];
+        let shapes = [
+            (Kind::Normal, None),
+            (Kind::Normal, Some(ListInfo { ordered: false, level: 0 })),
+            (Kind::Code, Some(ListInfo { ordered: true, level: 0 })),
+        ];
+        for (source, expected) in cases {
+            for (kind, list) in shapes {
+                let mut p = Para::new(kind);
+                p.list = list;
+                p.push_text(source, &Fmt { code: true, ..Default::default() });
+                let mut doc = model::to_doc(&model::Flow { blocks: vec![FBlock::Para(p)], ..Default::default() });
+                // The flow builder removes CR controls; preserve the native document's raw input.
+                let p = doc.para_mut(wordcraft_doc::StoryRef::Body, &wordcraft_doc::Path::top(0)).unwrap();
+                p.text = source.to_string();
+                p.runs[0].len = source.len();
+                let md = String::from_utf8(crate::export("md", &doc).unwrap().unwrap()).unwrap();
+                assert_eq!(md.trim_end().lines().count(), 1, "{source:?} {kind:?} {list:?} -> {md:?}");
+                assert!(!md.contains('\r'), "{md:?}");
+                let back = crate::import("md", md.as_bytes()).unwrap().unwrap();
+                let flow = model::from_doc(&back);
+                let [FBlock::Para(q)] = flow.blocks.as_slice() else { panic!("{md:?}") };
+                assert_eq!(q.text(), expected, "{source:?} {kind:?} {list:?} -> {md:?}");
+                assert_eq!(q.list, list, "{md:?}");
+                assert!(q.inlines.iter().all(|i| matches!(i, Inline::Text(_, f) if f.code)), "{md:?}");
+            }
+        }
+        let fenced = "```\na\n# b\n```";
+        assert_eq!(export(&import(fenced)).trim_end(), fenced);
+    }
+
+    #[test]
+    fn code_span_line_endings_in_table_cells_stay_literal() {
+        for ending in ["\n", "\r", "\r\n"] {
+            let source = format!("a{ending}# b");
+            let mut p = Para::default();
+            p.push_text(&source, &Fmt { code: true, ..Default::default() });
+            let cell = Cell { blocks: vec![FBlock::Para(p)], ..Default::default() };
+            let table = FTable { rows: vec![vec![cell, Cell::default()], vec![Cell::default(), Cell::default()]], ..Default::default() };
+            let mut doc = model::to_doc(&model::Flow { blocks: vec![FBlock::Table(table)], ..Default::default() });
+            let p = doc.para_mut(wordcraft_doc::StoryRef::Body, &wordcraft_doc::Path(vec![0, 0, 0, 0])).unwrap();
+            p.text = source.clone();
+            p.runs[0].len = source.len();
+            let md = export(&doc);
+            let back = model::from_doc(&import(&md));
+            let [FBlock::Table(table), ..] = back.blocks.as_slice() else { panic!("{md:?}") };
+            assert_eq!(table.rows.len(), 2, "{md:?}");
+            assert_eq!(table.rows[0].len(), 2, "{md:?}");
+            let [FBlock::Para(p)] = table.rows[0][0].blocks.as_slice() else { panic!("{md:?}") };
+            assert_eq!(p.text(), "a # b", "{md:?}");
+            assert!(p.inlines.iter().all(|i| matches!(i, Inline::Text(_, f) if f.code)), "{md:?}");
+        }
     }
 }
