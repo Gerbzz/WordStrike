@@ -1055,6 +1055,7 @@ fn escape_line_start(s: String) -> String {
 }
 
 fn code_span(t: &str) -> String {
+    let t = t.replace("\r\n", " ").replace(['\r', '\n'], " ");
     let mut longest = 0;
     let mut cur = 0;
     for c in t.chars() {
