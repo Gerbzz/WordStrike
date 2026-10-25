@@ -35,8 +35,8 @@ jobs:
         with:
           toolchain: '1.96.1'
       - name: Run upstream regression
-        run: cargo test --locked -p wordcraft-formats --lib code_span_line_endings
+        run: 'cargo test --locked -p wordcraft-formats --lib code_span_line_endings'
       - name: Run adjacent regression suite 1
-        run: cargo test --locked -p wordcraft-formats
+        run: 'cargo test --locked -p wordcraft-formats'
       - name: Run adjacent regression suite 2
-        run: cargo test --locked -p wordcraft-doc --lib locale_number::tests::
+        run: 'cargo test --locked -p wordcraft-doc --lib locale_number::tests::'
