@@ -102,6 +102,9 @@ pub fn parse_number(s: &str, lang: Option<&str>) -> Option<f64> {
         return None;
     }
     let v: f64 = format!("0{int_digits}.{frac_digits}0").parse().ok()?;
+    if !v.is_finite() {
+        return None;
+    }
     Some(if neg { -v } else { v })
 }
 
@@ -163,6 +166,23 @@ mod tests {
         assert_eq!(format_number(5.75, en), "5.75");
         assert_eq!(decimal_separator(Some("de-CH")), '.');
         assert_eq!(decimal_separator(Some("de-DE")), ',');
+    }
+
+    #[test]
+    fn overflowing_positive_digit_strings_are_not_numbers() {
+        assert_eq!(parse_number(&"1".repeat(350), None), None);
+        assert_eq!(parse_number(&"9".repeat(400), Some("pl-PL")), None);
+    }
+
+    #[test]
+    fn overflowing_negative_digit_strings_are_not_numbers() {
+        assert_eq!(parse_number(&format!("-{}", "1".repeat(350)), None), None);
+    }
+
+    #[test]
+    fn large_finite_digit_strings_are_numbers() {
+        let big = parse_number(&"1".repeat(300), None);
+        assert!(big.is_some_and(f64::is_finite), "{big:?}");
     }
 
     #[test]
