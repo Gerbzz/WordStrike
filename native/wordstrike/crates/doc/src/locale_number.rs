@@ -102,6 +102,9 @@ pub fn parse_number(s: &str, lang: Option<&str>) -> Option<f64> {
         return None;
     }
     let v: f64 = format!("0{int_digits}.{frac_digits}0").parse().ok()?;
+    if !v.is_finite() {
+        return None;
+    }
     Some(if neg { -v } else { v })
 }
 
