@@ -166,6 +166,23 @@ mod tests {
     }
 
     #[test]
+    fn overflowing_positive_digit_strings_are_not_numbers() {
+        assert_eq!(parse_number(&"1".repeat(350), None), None);
+        assert_eq!(parse_number(&"9".repeat(400), Some("pl-PL")), None);
+    }
+
+    #[test]
+    fn overflowing_negative_digit_strings_are_not_numbers() {
+        assert_eq!(parse_number(&format!("-{}", "1".repeat(350)), None), None);
+    }
+
+    #[test]
+    fn large_finite_digit_strings_are_numbers() {
+        let big = parse_number(&"1".repeat(300), None);
+        assert!(big.is_some_and(f64::is_finite), "{big:?}");
+    }
+
+    #[test]
     fn hostile_numbers_never_panic() {
         for s in ["", "-", "+", ",", ".", "1e400", "inf", "NaN", "--1", "₽", "1 ,", " zł", "\u{2212}", "9".repeat(500).as_str()] {
             for l in [None, Some("pl"), Some("en"), Some("")] {
